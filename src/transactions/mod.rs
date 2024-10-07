@@ -1,30 +1,30 @@
 use std::hash::{DefaultHasher, Hash, Hasher};
 
 #[derive(Debug, Hash)]
-struct Date {
-    days: u8,
+pub struct Date {
+    day: u8,
     month: u8,
     year: u8,
 }
 
 #[derive(Debug)]
-struct Signature {
+pub struct Signature {
     hash: String,
     sk: String,
 }
 
 #[derive(Debug, Hash)]
-struct User {
-    id: usize,
-    name: String,
-    hashed_password: String,
-    pk: String,
-    sk: String,
+pub struct User {
+    pub id: usize,
+    pub name: String,
+    pub hashed_password: String,
+    pub pk: String,
+    pub sk: String,
 }
 
 #[derive(Debug, Hash)]
-struct Transaction {
-    id: usize,
+pub struct Transaction {
+    id: String,
     sender: User,
     receiver: User,
     date: Date,
@@ -35,7 +35,7 @@ struct Transaction {
 }
 
 #[derive(Debug, Hash)]
-enum TransactionType {
+pub enum TransactionType {
     Cash,
     EFT,
     Check,
@@ -45,6 +45,28 @@ enum TransactionType {
 }
 
 impl Transaction {
+    pub fn new(
+        id: String,
+        sender: User,
+        receiver: User,
+        date: Date,
+        debit: usize,
+        credit: usize,
+        signature: usize,
+        transaction_type: TransactionType,
+    ) -> Self {
+        Self {
+            id,
+            sender,
+            receiver,
+            date,
+            debit,
+            credit,
+            signature,
+            transaction_type,
+        }
+    }
+
     pub fn get_balance(&self) -> isize {
         self.debit as isize - self.credit as isize
     }
@@ -70,5 +92,11 @@ impl Signature {
     }
     pub fn is_valid(hash: &str) -> bool {
         false
+    }
+}
+
+impl Date {
+    pub fn new(day: u8, month: u8, year: u8) -> Date {
+        Date { day, month, year }
     }
 }
