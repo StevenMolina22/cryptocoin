@@ -1,4 +1,4 @@
-#[derive(Debug, Hash)]
+#[derive(Debug, Hash, Clone)]
 pub struct Date {
     day: u8,
     month: u8,
@@ -20,18 +20,18 @@ pub struct User {
     pub sk: [u8; 32],
 }
 
-#[derive(Debug, Hash)]
+#[derive(Debug, Hash, Clone)]
 pub struct Transaction {
-    id: String,
-    sender_addr: String,
-    receiver_addr: String,
+    pub id: String,
+    pub sender_addr: String,
+    pub receiver_addr: String,
     date: Date,
     debit: usize,
     credit: usize,
     transaction_type: TransactionType,
 }
 
-#[derive(Debug, Hash)]
+#[derive(Debug, Hash, Clone)]
 pub enum TransactionType {
     Cash,
     EFT,
