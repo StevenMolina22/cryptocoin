@@ -1,18 +1,10 @@
-use crate::common::Transaction;
+mod chain;
+mod concensus;
 
-mod blocks;
-pub use blocks::*;
-
-const MAX_TRANSACTIONS: usize = 10;
-
-#[derive(Debug, Clone)]
-pub struct Block {
-    id: usize,
-    previous_hash: String,
-    transactions: Vec<Transaction>,
-}
+use crate::block::Block;
 
 #[derive(Debug)]
 pub struct Blockchain {
     blocks: Vec<Block>,
+    // wallets: Vec<Wallet>,
 }

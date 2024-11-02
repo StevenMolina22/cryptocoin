@@ -1,35 +1,13 @@
-use crate::common::Transaction;
-
-use super::{Block, Blockchain};
-
-impl Block {
-    pub fn new(id: usize, previous_hash: &str, transactions: Vec<Transaction>) -> Result<Self, ()> {
-        Ok(Block {
-            id,
-            previous_hash: String::from(previous_hash),
-            transactions,
-        })
-    }
-
-    fn calculate_hash(&self) -> String {
-        String::from("hash")
-    }
-
-    fn verify_pow() -> bool {
-        false
-    }
-
-    pub fn add_transaction(&mut self, transaction: Transaction) -> Result<(), ()> {
-        Ok(())
-    }
-}
+use super::Blockchain;
+use crate::{block::Block, crypto::verify_signature, transaction::Transaction};
+const MAX_TRANSACTIONS: usize = 10;
 
 impl Blockchain {
-    fn new() -> Blockchain {
+    pub fn new() -> Blockchain {
         Blockchain { blocks: vec![] }
     }
 
-    fn add_block(&mut self, block: Block) {}
+    pub fn add_block(&mut self, block: Block) {}
 
     pub fn get_last_block(&self) -> Option<&Block> {
         self.blocks.last()
@@ -39,7 +17,9 @@ impl Blockchain {
         self.blocks.get(index)
     }
 
-    fn mine_block(&mut self, block: Block) {}
+    pub fn broadcast_block(&self, block: Block) {}
+
+    pub fn broadcast_transaction(&self, transaction: Transaction) {}
 
     fn get_length(&self) -> usize {
         self.blocks.len()
@@ -53,19 +33,32 @@ impl Blockchain {
         false
     }
 
-    pub fn add_transaction(&mut self, transaction: Transaction) -> Result<(), ()> {
+    /// Adds transaction to blockchain if it is valid
+    ///
+    /// Returns Err if transaction is invalid
+    pub fn add_transaction(&mut self, transaction: Transaction, pk: [u8; 32]) -> Result<(), ()> {
+        // TODO: replace with actual public key
+        match transaction.signature {
+            Some(ref signature) => {
+                if verify_signature(&transaction, signature, pk) {
+                    return Ok(());
+                }
+            }
+            None => return Err(()),
+        }
         match self.get_last_block() {
             Some(block) => match block.transactions.len() {
                 MAX_TRANSACTIONS => Ok(()),
                 _ => Ok(()),
             },
             None => {
-                self.mine_block(Block::new(0, "", vec![transaction])?);
+                Block::new(0, "", vec![transaction], 0).mine(); // TODO: calculate nonce
                 Ok(())
             }
         }
     }
 
+    /// Returns a list of all transactions in the blockchain
     pub fn get_transaction_list(&self) -> Vec<Transaction> {
         self.blocks
             .iter()

@@ -1,14 +1,17 @@
-use common::{Date, Transaction, TransactionType, User, Wallet};
-use crypto::{generate_signature, verify_signature};
-
+use common::User;
+use transaction::{Transaction, TransactionType};
+use wallet::Wallet;
+mod block;
 mod blockchain;
-pub mod common;
+mod common;
 mod crypto;
+mod transaction;
 mod wallet;
 
 fn main() {
+    let mut blockchain_instance = blockchain::Blockchain::new();
     let keypair1 = crypto::generate_key_pair();
-    let keypair2 = crypto::generate_key_pair();
+    // let keypair2 = crypto::generate_key_pair();
 
     let sender = User {
         id: 1,
@@ -18,22 +21,18 @@ fn main() {
         sk: keypair1.secret.to_bytes(),
     };
 
-    let wallet = Wallet::new("wallet_1");
-    let wallet2 = Wallet::new("wallet_2");
+    let mut sender_wallet = Wallet::new("wallet_1");
+    let receiver_wallet = Wallet::new("wallet_2");
 
     let transaction = Transaction::new(
         String::from("1"),
-        wallet.address.clone(),
-        wallet2.address.clone(),
+        100,
+        sender_wallet.address.clone(),
+        receiver_wallet.address.clone(),
         TransactionType::WireTransfer,
     );
 
     // Print the transaction details
     println!("Transaction: {:#?}", transaction);
-
-    let signature = generate_signature(&transaction, String::from("secret_key_1"));
-    println!("Signature: {:#?}", signature);
-
-    let is_verified = verify_signature(&transaction, signature, sender.pk);
-    println!("Is Verified: {}", is_verified);
+    sender_wallet.transfer(100, &receiver_wallet.address, &mut blockchain_instance);
 }

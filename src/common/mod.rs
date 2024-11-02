@@ -1,3 +1,5 @@
+use crate::crypto::generate_key_pair;
+
 #[derive(Debug, Hash, Clone)]
 pub struct Date {
     day: u8,
@@ -5,10 +7,10 @@ pub struct Date {
     year: u32,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Hash, Clone)]
 pub struct Signature {
-    hash: String,
-    sk: String,
+    hash: Vec<u8>,
+    sk: [u8; 32],
 }
 
 #[derive(Debug, Hash, Clone)]
@@ -20,44 +22,10 @@ pub struct User {
     pub sk: [u8; 32],
 }
 
-#[derive(Debug, Hash, Clone)]
-pub struct Transaction {
-    pub id: String,
-    pub sender_addr: String,
-    pub receiver_addr: String,
-    date: Date,
-    debit: usize,
-    credit: usize,
-    transaction_type: TransactionType,
-}
-
-#[derive(Debug, Hash, Clone)]
-pub enum TransactionType {
-    Cash,
-    EFT,
-    Check,
-    CreditCard,
-    DebitCard,
-    WireTransfer,
-}
-
-#[derive(Debug)]
-pub enum TransactionStatus {
-    Pending,
-    Completed,
-    Failed,
-}
-
-#[derive(Debug)]
-pub struct Wallet {
-    pub address: String,
-    pub balance: usize,
-}
-
 impl Signature {
-    pub fn new(message: String, sk: String) -> Signature {
+    pub fn new(message: String, sk: [u8; 32]) -> Signature {
         Signature {
-            hash: String::from(message),
+            hash: vec![], // TODO: hash the message
             sk,
         }
     }
@@ -69,27 +37,15 @@ impl Date {
     }
 }
 
-impl User {}
-
-impl Transaction {
-    pub fn new(
-        id: String,
-        sender_addr: String,
-        receiver_addr: String,
-        transaction_type: TransactionType,
-    ) -> Self {
-        Self {
-            id,
-            sender_addr,
-            receiver_addr,
-            date: Date::new(0, 0, 2000),
-            debit: 0,
-            credit: 0,
-            transaction_type,
+impl User {
+    pub fn new(username: &str) -> User {
+        let keypair = generate_key_pair();
+        User {
+            id: 0, // TODO: generate a unique id
+            name: username.to_string(),
+            hashed_password: String::from(""), // TODO: hash the password
+            pk: keypair.public.to_bytes(),
+            sk: keypair.secret.to_bytes(),
         }
-    }
-
-    pub fn get_status(&self) -> TransactionStatus {
-        TransactionStatus::Pending
     }
 }
