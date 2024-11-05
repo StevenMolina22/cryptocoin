@@ -1,6 +1,6 @@
 mod chain;
 mod concensus;
-
+mod transactions;
 use crate::block::Block;
 
 #[derive(Debug)]

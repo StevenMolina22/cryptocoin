@@ -1,12 +1,14 @@
 use crate::transaction::Transaction;
 
+pub mod accessors;
+
 #[derive(Debug, Clone)]
 pub struct Block {
     id: usize,
-    pub previous_hash: String,
+    previous_hash: String,
     timestamp: u64,
     nonce: u64,
-    pub transactions: Vec<Transaction>,
+    transactions: Vec<Transaction>,
 }
 
 impl Block {
@@ -21,7 +23,11 @@ impl Block {
     }
 
     fn calculate_hash(&self) -> String {
-        String::from("hash")
+        // let mut hasher = DefaultHasher::new();
+        // self.hash(&mut hasher);
+        // let hash_value = hasher.finish();
+        // format!("{:016x}", hash_value)
+        String::from("") // TODO: implement
     }
 
     fn verify_pow() -> bool {

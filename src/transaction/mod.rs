@@ -1,6 +1,7 @@
-use crate::common::{Date, Signature};
+use crate::common::Date;
+use ed25519_dalek::Signature;
 
-#[derive(Debug, Hash, Clone)]
+#[derive(Debug, Clone, serde::Serialize)]
 pub struct Transaction {
     pub id: String,
     pub sender_addr: String,
@@ -11,7 +12,7 @@ pub struct Transaction {
     transaction_type: TransactionType,
 }
 
-#[derive(Debug, Hash, Clone)]
+#[derive(Debug, Hash, Clone, serde::Serialize)]
 pub enum TransactionType {
     Cash,
     EFT,

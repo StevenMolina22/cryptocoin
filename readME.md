@@ -1,172 +1,170 @@
-**`FLOW of APP`**
+### **`OVERALL DESCRIPTION`**
 
-A user has an amount of money already in its account, then he transfers that money to another account, this is done by in the ledger he writes a description of the transaction with his signature, the receiver is sure that the signature is valid so he accepts the transaction as valid.
+This project is a Rust-based cryptocurrency implementation focused on secure, decentralized, and verifiable transactions managed on a blockchain using a Proof of Work (PoW) consensus model. Wallets are implemented to allow users to securely store their private (sk) and public (pk) keys, sign transactions, and interact with the blockchain. The project aims to provide both a robust backend handling cryptographic operations and a user interface via the wallet module to facilitate transactions and balance tracking.
 
-A transaction is a record about the sender, receiver, amount and extra details, the ledger in this case is a record of all transactions, the signature is something the uniquely identifies the sender and that can be easily checked for validity.
+At a high level, the network ensures ledger integrity and security through cryptographic mechanisms, such as hashing, digital signatures, and distributed consensus, providing both privacy and resilience against tampering.
 
----
+Each transaction begins with a user’s wallet signing it, propagating through the network where other nodes validate, mine, and add it to the blockchain. Verification occurs at multiple stages:
 
-Concepts
-
-- User
-- Accounts → Wallet / App
-- Transactions → Common
-- Ledger → Blockchain
-- Signature
+1. **User Wallet**: Signs the transaction and ensures sufficient balance.
+2. **Mining Node**: Receives the signed transaction, compiles it into a block, and competes in PoW to mine it.
+3. **Consensus Verification**: All nodes receive and verify mined blocks, ensuring transaction authenticity before adding them to their copy of the blockchain.
 
 ---
 
-Each transaction made in any wallet must update the block chain
+### **`WALLET MODULE`**
+
+The wallet is a critical part of the user interface, enabling users to manage their balances and execute transactions on the network. Wallets start with an initial balance, simplifying testing and early interactions on the network.
+
+### Wallet Features:
+
+- **Key Management**: Stores public/private key pairs (pk/sk) securely, used to sign transactions.
+- **Balance Tracking**: Keeps account balances updated based on blockchain history.
+- **Transaction Signing**: Ensures transactions are securely signed for propagation across the network.
 
 ---
 
-**`MODULES AND SYSTEM`**
+### **`APPLICATION FLOW`**
 
-The user interface with the system will be wallet.
-
-The currency itself will be a simple ledger with signatures capabilities.
-
-The distribution system of the currency will be the blockchain.
-
-**`Wallet module:`**
-
-- Manages user interactions
-    - Transactions
-    - Balance Check…
-- Keeps track of users balances
-- Stores keys and signatures for transactions
-
-**`Blockchain module:`**
-
-- Handles security
-- Handles consensus
-- Handles transaction/block history
-
-**`Crypto module:`**
-
-- Cryptographic logic
-- Hashing, signatures and keys
-- Tokens
+1. **User Registration**: On signing up, users are assigned a unique wallet and an initial balance. The wallet is represented with a public address and private key.
+2. **Transaction Creation**: Users initiate transfers by specifying the receiver's address and amount. This transaction is signed by the sender’s private key, allowing the receiver and network nodes to verify authenticity.
+3. **Transaction Verification**:
+    - The transaction includes the sender, receiver, amount, and signature.
+    - The network validates the signature to confirm the sender's authenticity and verifies the wallet balance.
+4. **Mining & Ledger Update**:
+    - Once validated, the transaction is added to a block by a mining node.
+    - The network’s PoW consensus model requires nodes to solve a computational problem, adding an element of security and finality to mined blocks.
+    - Mined blocks, once verified by the network, are permanently added to the blockchain, solidifying transaction history.
 
 ---
 
-- RECOMMENDATIONS IMPLEMENTATION
+### **`MODULES`**
 
-    Dividing project into distinct modules—**wallet**, **blockchain**, and **currency**—
+### **Wallet Module**
 
-    ### 1. **Modular Design Benefits**
+- Manages user keys and interactions.
+- Maintains balances and signing capabilities.
 
-    - **Specialization**: Each module can focus on specific functionalities, allowing for specialized development and optimization. This separation can enhance the quality and performance of each component.
-    - **Scalability**: Modular designs facilitate easier updates and scalability. You can upgrade or replace one module without affecting the others, making it simpler to adapt to new technologies or user needs.
-    - **Collaboration**: Different teams can work concurrently on separate modules, speeding up the development process and allowing for parallel workflows.
+### **Blockchain Module**
 
-    ### 2. **Wallet Module**
+- Ensures overall ledger security.
+- Manages consensus, block verification, and transaction history.
+- Implements PoW consensus to secure the network.
 
-    - **User Interface**: Focus on creating a user-friendly interface that allows users to manage their assets easily. Consider features like transaction history, balance display, and security settings.
-    - **Security Features**: Implement robust security measures such as encryption, two-factor authentication, and backup options to protect user funds.
-    - **Integration**: Ensure compatibility with various blockchain networks if you plan to support multiple currencies.
+### **Block Module**
 
-    ### 3. **Blockchain Module**
+- Handles block creation, mining, and transaction storage.
+- Executes PoW, making each block tamper-resistant.
 
-    - **Consensus Mechanism**: Choose an appropriate consensus mechanism (e.g., Proof of Work, Proof of Stake) based on your project's goals and resource availability[2].
-    - **Transaction Processing**: Design the architecture for how transactions will be verified and added to the blockchain, including node communication protocols[5].
-    - **Smart Contracts**: If applicable, implement smart contract functionality to automate processes within your ecosystem.
+### **Transaction Module**
 
-    ### 4. **Currency Module**
+- Manages transaction validation, propagation, and organization in blocks.
 
-    - **Token-economics**: Define the economic model of your currency, including total supply, distribution methods, and incentives for users[2].
-    - **Utility**: Clearly outline the use cases for your currency within your ecosystem to encourage adoption and usage.
-    - **Regulatory Compliance**: Consider legal implications related to creating a new currency, including adherence to local regulations regarding cryptocurrencies.
+### **Crypto Module**
 
-    ### 5. **Testing and Quality Assurance**
+- Provides cryptographic utilities: hashing, digital signatures, and key management.
+- Ensures that transactions and blocks remain secure, verifiable, and immutable.
 
-    - **Unit Testing**: Conduct thorough testing of each module independently to ensure functionality before integration.
-    - **Integration Testing**: After individual modules are tested, perform integration testing to ensure they work seamlessly together.
+---
 
-    ### 6. **Documentation and Community Engagement**
+### **`IMPLEMENTATION`**
 
-    - **Documentation**: Maintain clear documentation for each module that outlines functionality, APIs, and integration points.
-    - **Community Feedback**: Engage with potential users early in the development process to gather feedback on usability and features.
-- Graphics
+The project’s backend handles the majority of logic, including cryptographic operations, transaction validation, and interaction with the blockchain. The wallet backend facilitates user interactions, balance tracking, and transaction initiation.
 
-    ```mermaid
-    graph TD;
-        A[Crypto Currency Back-End] --> B[Calculations]
-        A --> C[Hashing]
-        A --> D[Security]
-        A --> E[Wallet Back-End]
-        A --> F[Interface for Interaction]
+An eventual web interface will support user account management, enabling sign-ups and balance transfers with real-time transaction histories.
 
-        F --> G[User Inputs]
-        F --> H[Network Inputs]
-        F --> I[Front-End Inputs]
-    ```
+### **Intermodule Interactions**
 
-    ```mermaid
-    graph TD
-      A[Input Handler] --> B[Wallet]
-      B --> C[BlockChain]
-      C --> D[Currency]
+- **Wallet Module to Blockchain**: Initiates transactions and verifies balances.
+- **Blockchain to Crypto**: Uses cryptographic functions for hashing and signature verification.
+- **All Modules to Transaction Module**: Central to maintaining an accurate, immutable record of transactions.
 
-    ```
+---
 
+### **`TRANSACTION IMPLEMENTATION`**
 
-**`IMPLEMENTATION`**
+Transactions occur exclusively between wallets, with each transaction linked to a block and logged in the blockchain.
 
-**Working with the interfaces:**
+1. **Linking Transactions to Blocks**:
+    - If a block is already open, the transaction is appended to it.
+    - If no active block is available, a new block is created, which initiates the mining process.
+2. **Signature Mechanism**:
+    - **Signing**: `(transaction, SK) -> Signature`
+    - **Verification**: `(transaction, signature, PK) -> bool`
+    - Every transaction signature verifies the sender’s identity without exposing their private key.
 
-The crypto currency will have a complete back-end that takes cares of everything related to calculations, hashing and security, as well as a wallet back-end, it will also have an interface for interacting with the outside world, this for the reason to accept different types of inputs, let it be user, network, front-end, etc.
+---
 
-Current idea:
+### **`DATA STRUCTURES`**
 
-The input will come from a website, where there will be the option to sign up into an account, this already will give the possibility to start to make transactions, the wallet will be a digital one, there will be too a back-end that will hold users information, keys, balance amounts, etc, as well as the history of transactions of all the network, (should be able to be decentralized eventually)
+```rust
+struct Wallet {
+    address: String,
+    balance: usize,
+    pk: [u8; 32],
+    sk: [u8; 32],
+}
 
-Of course the front-end for the wallet will use the back-end which in turn uses the wallet interface, which will have methods for interacting with users money and to start making transactions, the front-end and back-end will have absolute no interaction with the implementation from crypto-blockchain.
+```
 
-The wallet will interact directly with the blockchain, that is the one that keeps track of the history of transactions as well as most of the security part of it.
+```rust
+struct Blockchain {
+    blocks: Vec<Block>,
+}
 
-- **Web-App Interface:**
+```
 
-    The web app interface
+```rust
+struct Block {
+    id: usize,
+    previous_hash: String,
+    timestamp: u64,
+    nonce: u64,
+    transactions: Vec<Transaction>,
+}
 
-- **Wallet interface:**
-    - Create Wallet
+```
 
-        Wallet will be object in which transfer are directly made
+```rust
+struct Transaction {
+    id: String,
+    sender_addr: String,
+    receiver_addr: String,
+    signature: Option<Signature>,
+    amount: usize,
+    date: Date,
+    transaction_type: TransactionType,
+}
 
-    - Get balance
-    - Send funds
-    - Receive funds
+```
 
-    ---
+---
 
-    - Get transactions history
-    - Verify transaction
-    - Lock wallet
-    - Unlock wallet
-- **Blockchain Interface:**
+### **INTERFACES**
 
-    The blockchains main goal is to handle security and everything related to that
+Using a modular project structure, each module will have well-defined interfaces to promote code reusability, encapsulation, and easier testing. Key files in the project include:
 
-    - Create blog
-    - Add Blog to chain
-    - Get Blog by Height
-    - Get Latest Block
-    - Verify Block
-    - Get chain length
-    - Mine Block
-    - Check Consensus
-    - Get transaction history
+```
+src
+├── block
+│  └── mod.rs
+├── blockchain
+│  ├── chain.rs
+│  ├── concensus.rs
+│  ├── mod.rs
+│  └── transactions.rs
+├── common
+│  └── mod.rs
+├── crypto
+│  ├── keys.rs
+│  ├── mod.rs
+│  └── signatures.rs
+├── main.rs
+├── transaction
+│  └── mod.rs
+└── wallet
+   └── mod.rs
 
-    ---
+```
 
-    - Replace chain
-- **Crypto Interface**
-
-    The crypto interface will be characterize for the ability to do this things:
-
-    ---
-
-    - Create signature
-    - Verify signature
-    - Generate PK SK pair
+Each module will implement an interface for its core functionalities, ensuring each component interacts effectively within the system. The `transaction` module is central to linking user actions to ledger records, while the `block` and `blockchain` modules manage PoW and consensus, maintaining the network’s integrity.
