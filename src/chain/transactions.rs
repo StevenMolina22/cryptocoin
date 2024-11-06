@@ -11,11 +11,15 @@ impl Blockchain {
     pub fn add_transaction(&mut self, transaction: Transaction, pk: &PublicKey) -> Result<(), ()> {
         match transaction.signature {
             Some(ref signature) => {
-                if verify_signature(&transaction, signature, &pk) {
-                    return Ok(());
+                if !verify_signature(&transaction, signature, &pk) {
+                    println!("Signature verification failed in add to chain");
+                    return Err(());
                 }
             }
-            None => return Err(()),
+            None => {
+                println!("No signature in add to chain");
+                return Err(());
+            }
         }
         match self.get_last_block() {
             Some(block) => match block.get_transactions().len() {

@@ -1,15 +1,19 @@
 use crate::common::Date;
 use ed25519_dalek::Signature;
+use uuid::Uuid;
+
+pub mod accessors;
 
 #[derive(Debug, Clone, serde::Serialize)]
 pub struct Transaction {
     pub id: String,
     pub sender_addr: String,
     pub receiver_addr: String,
-    pub signature: Option<Signature>,
     amount: usize,
     date: Date,
     transaction_type: TransactionType,
+    #[serde(skip_serializing)]
+    pub signature: Option<Signature>,
 }
 
 #[derive(Debug, Hash, Clone, serde::Serialize)]
@@ -33,27 +37,24 @@ pub enum TransactionStatus {
 
 impl Transaction {
     pub fn new(
-        id: String,
         amount: usize,
-        sender_addr: String,
-        receiver_addr: String,
+        sender_addr: &str,
+        receiver_addr: &str,
         transaction_type: TransactionType,
     ) -> Self {
         Self {
-            id,
-            sender_addr,
-            receiver_addr,
+            id: Uuid::new_v4().to_string(),
+            sender_addr: sender_addr.to_string(),
+            receiver_addr: receiver_addr.to_string(),
             signature: None,
             date: Date::new(0, 0, 2000),
             amount,
             transaction_type,
         }
     }
-
-    pub fn get_status(&self) -> TransactionStatus {
-        TransactionStatus::Pending
+    pub fn sign(&mut self, signature: Signature) {
+        self.signature = Some(signature);
     }
-
     pub fn validate(&self) -> bool {
         true
     }
