@@ -1,5 +1,3 @@
-use uuid::Uuid;
-
 use crate::{
     chain::Blockchain,
     crypto::{sign_transaction, verify_signature},

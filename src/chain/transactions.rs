@@ -5,9 +5,6 @@ use crate::{block::Block, crypto::verify_signature, transaction::Transaction};
 const MAX_TRANSACTIONS: usize = 10;
 
 impl Blockchain {
-    /// Adds transaction to blockchain if it is valid
-    ///
-    /// Returns Err if transaction is invalid
     pub fn add_transaction(&mut self, transaction: Transaction, pk: &PublicKey) -> Result<(), ()> {
         match transaction.signature {
             Some(ref signature) => {
@@ -23,11 +20,16 @@ impl Blockchain {
         }
         match self.get_last_block() {
             Some(block) => match block.get_transactions().len() {
-                MAX_TRANSACTIONS => Ok(()),
+                MAX_TRANSACTIONS => {
+                    let mut new_block = Block::new(&block.get_hash().unwrap(), vec![]);
+                    new_block.add_transaction(transaction).unwrap();
+                    Ok(())
+                }
                 _ => Ok(()),
             },
             None => {
-                Block::new(0, "", vec![transaction], 0).mine(); // TODO: calculate nonce
+                let mut genesis_block = Block::new("", vec![]); // TODO: calculate nonce
+                genesis_block.add_transaction(transaction).unwrap();
                 Ok(())
             }
         }

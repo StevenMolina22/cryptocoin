@@ -1,5 +1,5 @@
 use crate::common::Date;
-use ed25519_dalek::Signature;
+use ed25519_dalek::{PublicKey, Signature};
 use uuid::Uuid;
 
 pub mod accessors;
@@ -55,7 +55,7 @@ impl Transaction {
     pub fn sign(&mut self, signature: Signature) {
         self.signature = Some(signature);
     }
-    pub fn validate(&self) -> bool {
-        true
+    pub fn validate(&self, pk: &PublicKey) -> bool {
+        todo!()
     }
 }

@@ -1,37 +1,30 @@
-use crate::transaction::Transaction;
+use uuid::Uuid;
+
+use crate::{crypto::hash_block, transaction::Transaction};
 
 pub mod accessors;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, serde::Serialize)]
 pub struct Block {
-    id: usize,
-    previous_hash: String,
+    id: String,
+    previous_hash: Option<String>,
     timestamp: u64,
     nonce: u64,
     transactions: Vec<Transaction>,
+    #[serde(skip_serializing)]
+    hash: Option<String>,
 }
 
 impl Block {
-    pub fn new(id: usize, previous_hash: &str, transactions: Vec<Transaction>, nonce: u64) -> Self {
+    pub fn new(previous_hash: &str, transactions: Vec<Transaction>) -> Self {
         Block {
-            id,
-            previous_hash: String::from(previous_hash),
+            id: Uuid::new_v4().to_string(),
+            previous_hash: Some(String::from(previous_hash)),
             timestamp: 0, // TODO: get current time
-            nonce,        // TODO: calculate nonce
+            nonce: 0,     // TODO: calculate nonce
             transactions,
+            hash: None,
         }
-    }
-
-    fn calculate_hash(&self) -> String {
-        // let mut hasher = DefaultHasher::new();
-        // self.hash(&mut hasher);
-        // let hash_value = hasher.finish();
-        // format!("{:016x}", hash_value)
-        String::from("") // TODO: implement
-    }
-
-    fn verify_pow() -> bool {
-        false
     }
 
     /// Adds transaction to already create block
@@ -56,5 +49,18 @@ impl Block {
         }
     }
 
-    pub fn mine(&mut self) {}
+    pub fn mine(&mut self, difficulty: usize) {
+        let target = "0".repeat(difficulty);
+        while !target.starts_with(&target) {
+            self.nonce += 1;
+            self.hash = Some(hash_block(self))
+        }
+    }
+
+    pub fn validate(&self) -> bool {
+        match &self.hash {
+            Some(hash) => *hash == hash_block(self),
+            None => false,
+        }
+    }
 }
