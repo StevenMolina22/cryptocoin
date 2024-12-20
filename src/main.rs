@@ -1,4 +1,8 @@
-use wallet::Wallet;
+use chain::Chain;
+use wallet::{
+    transactions::{deposit, transfer},
+    Wallet,
+};
 mod block;
 mod chain;
 mod common;
@@ -7,22 +11,23 @@ mod transaction;
 mod wallet;
 
 fn main() {
-    let mut bc = chain::Blockchain::new();
-    let mut sender_wallet = Wallet::new("wallet_1");
-    let receiver_wallet = Wallet::new("wallet_2");
+    // TODO!: Investigate about bootstrapping a blockchain
+    let mut bc = Chain::new();
 
-    // Print the transaction details
-    match sender_wallet.transfer(10, receiver_wallet.get_address(), &mut bc) {
-        Ok(_) => {
-            println!("Transaction successful");
-        }
-        Err(_) => {
-            println!("Transaction failed");
-        }
+    let mut from_wallet = Wallet::new("from_wallet");
+    let to_wallet = Wallet::new("to_wallet");
+
+    deposit(1000, &mut from_wallet, &mut bc).unwrap();
+
+    match transfer(&mut from_wallet, 10, &to_wallet.address, &mut bc) {
+        // calls unwrap on a None
+        Err(_) => println!("Transaction failed"),
+        Ok(_) => println!("Transaction successful"),
     }
 
-    for transaction in bc.get_transaction_list() {
+    for transaction in from_wallet.get_transactions(&bc) {
         println!("{:?}", transaction)
     }
-    sender_wallet.deposit_funds(400).unwrap();
+
+    from_wallet.deposit_funds(400).unwrap();
 }

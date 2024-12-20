@@ -1,7 +1,7 @@
-use super::Blockchain;
+use super::Chain;
 
-impl Blockchain {
-    pub fn check_consenus() -> bool {
-        false
+impl Chain {
+    pub fn check_concensus() -> bool {
+        todo!()
     }
 }
