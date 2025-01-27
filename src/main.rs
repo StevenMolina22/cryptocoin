@@ -19,6 +19,7 @@ fn main() {
 
     deposit(1000, &mut from_wallet, &mut bc).unwrap();
 
+    // TODO!: Add mining logic and validation
     match transfer(&mut from_wallet, 10, &to_wallet.address, &mut bc) {
         // calls unwrap on a None
         Err(_) => println!("Transaction failed"),

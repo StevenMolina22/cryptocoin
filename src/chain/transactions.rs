@@ -1,5 +1,3 @@
-use ed25519_dalek::PublicKey;
-
 use super::Chain;
 use crate::{
     block::Block,
@@ -7,7 +5,9 @@ use crate::{
     transaction::{Transaction, TransactionType},
     wallet::Wallet,
 };
-const MAX_TRANSACTIONS: usize = 10;
+use ed25519_dalek::PublicKey;
+
+const MAX_TRANSACTIONS: usize = 1;
 
 impl Chain {
     ///
@@ -26,24 +26,19 @@ impl Chain {
             }
         }
         // Step 2: Add to last block
-        match self.get_last_block_mut() {
-            // there is a last block
-            Some(block) => match block.get_transactions().len() {
-                MAX_TRANSACTIONS => {
-                    let mut new_block = Block::new(&block.get_hash().unwrap(), vec![]);
+        assert!(self.get_last_block().is_some());
+        self.mempool.push(tx);
 
-                    new_block.add_transaction(tx.clone())?;
-                    self.blocks.push(new_block);
+        if let Some(block) = self.get_last_block_mut() {
+            let last_hash = block.get_hash().unwrap();
+            if self.mempool.len() == MAX_TRANSACTIONS {
+                let mut new_block = Block::new(&last_hash, vec![]);
+
+                for tx_x in self.mempool.drain(..) {
+                    let _ = new_block.add_transaction(tx_x.clone()); // invalid txs are skipped
                 }
-                _ => {
-                    block.add_transaction(tx.clone())?;
-                }
-            },
-            // no last block (create genesis block)
-            None => {
-                let mut genesis_block = Block::new("", vec![]); // TODO!: calculate nonce
-                genesis_block.add_transaction(tx.clone())?;
-                self.blocks.push(genesis_block);
+
+                self.blocks.push(new_block);
             }
         }
         Ok(())
@@ -52,27 +47,21 @@ impl Chain {
     pub fn add_transaction(&mut self, tx: Transaction, pk: &PublicKey) -> Result<(), ()> {
         // Step 1: Validations
         // TODO!: Verify balance
-        // if self.balance_of(&tx.from_addr) < tx.amount() {
-        //     return Err(());
-        // }
+        if self.balance_of(&tx.from_addr) < tx.amount() {
+            return Err(());
+        }
         // Verify signature
         match tx.signature {
-            Some(ref signature) => {
-                if !is_valid_signature(&tx, signature, &pk) {
-                    println!("Signature verification failed in add to chain");
-                    return Err(());
-                }
-            }
-            None => {
-                println!("No signature in add to chain");
-                return Err(());
-            }
+            Some(ref signature) if is_valid_signature(&tx, signature, &pk) => {}
+            _ => return Err(()),
         }
+
         // Step 2: Add to last block
         match self.get_last_block_mut() {
             // there is a last block
             Some(block) => match block.get_transactions().len() {
                 MAX_TRANSACTIONS => {
+                    // Last block is full, create new block
                     let mut new_block = Block::new(&block.get_hash().unwrap(), vec![]);
 
                     new_block.add_transaction(tx.clone())?;

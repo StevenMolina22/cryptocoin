@@ -1,13 +1,7 @@
-use std::collections::HashMap;
-
 use super::Chain;
 use crate::block::Block;
 
 impl Chain {
-    pub fn add_block(&mut self, block: Block) {
-        todo!()
-    }
-
     pub fn get_last_block(&self) -> Option<&Block> {
         self.blocks.last()
     }
@@ -20,7 +14,7 @@ impl Chain {
         self.blocks.get(index)
     }
 
-    pub fn _broadcast_block(&self, block: Block) {
+    pub fn broadcast_block(&self, block: Block) {
         todo!()
     }
 
@@ -36,12 +30,9 @@ impl Chain {
             }
         }
         balance
-        // self.blocks
-        //     .iter()
-        //     .for_each(|block| block.transactions.iter().filter(|tx| tx.from_addr == add1););
     }
 
-    fn length(&self) -> usize {
+    fn len(&self) -> usize {
         self.blocks.len()
     }
 }

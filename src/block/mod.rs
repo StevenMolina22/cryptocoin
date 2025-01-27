@@ -1,3 +1,6 @@
+use std::hash;
+
+use chrono::Utc;
 use uuid::Uuid;
 
 use crate::{crypto::hash_block, transaction::Transaction};
@@ -20,8 +23,9 @@ impl Block {
         Block {
             id: Uuid::new_v4().to_string(),
             previous_hash: Some(String::from(previous_hash)),
-            timestamp: 0, // TODO!: get current time
-            nonce: 0,     // TODO!: calculate nonce
+            timestamp: Utc::now().timestamp() as u64,
+            // nonce: u64::MAX / 2, // TODO!: calculate nonce
+            nonce: 0,
             transactions,
             hash: None,
         }
@@ -29,9 +33,13 @@ impl Block {
 
     pub fn mine(&mut self, difficulty: usize) {
         let target = "0".repeat(difficulty);
-        while !target.starts_with(&target) {
-            self.nonce += 1;
-            self.hash = Some(hash_block(self))
+        // TODO! Choose what happens if hash is None
+        if let Some(mut hash) = self.hash.take() {
+            while !hash.starts_with(&target) {
+                self.nonce += 1;
+                hash = hash_block(self)
+            }
+            self.hash = Some(hash)
         }
     }
 

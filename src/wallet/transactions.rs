@@ -18,7 +18,8 @@ pub fn transfer(
     to_addr: &str,
     blockchain: &mut Chain,
 ) -> Result<(), ()> {
-    // TODO!: Is it necessary to make a balance check here?
+    // Client side validations:
+    // TODO!: Check if to_addr es valid
     if amount > from_wallet.balance(blockchain) {
         return Err(());
     }
