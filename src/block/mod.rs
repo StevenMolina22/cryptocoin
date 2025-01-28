@@ -1,5 +1,5 @@
 use std::hash;
-
+use std::hash::Hash;
 use chrono::Utc;
 use uuid::Uuid;
 
@@ -34,6 +34,9 @@ impl Block {
     pub fn mine(&mut self, difficulty: usize) {
         let target = "0".repeat(difficulty);
         // TODO! Choose what happens if hash is None
+        if self.hash.is_none() {
+            self.hash = Some(hash_block(self));
+        }
         if let Some(mut hash) = self.hash.take() {
             while !hash.starts_with(&target) {
                 self.nonce += 1;

@@ -15,8 +15,10 @@ pub struct Chain {
 
 impl Chain {
     pub fn new() -> Chain {
+        let mut genesis_block = Block::new("", vec![]);
+        genesis_block.mine(3);
         Chain {
-            blocks: vec![Block::new("", vec![])],
+            blocks: vec![genesis_block],
             difficulty: 3,
             wallets: HashMap::new(),
             mempool: vec![],
