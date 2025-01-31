@@ -1,18 +1,17 @@
 use super::Chain;
 use crate::{
-    block::Block,
+    core::{block::Block, transaction::Transaction},
     crypto::is_valid_signature,
-    transaction::{Transaction, TransactionType},
-    wallet::Wallet,
 };
 use ed25519_dalek::PublicKey;
 
-const MAX_TRANSACTIONS: usize = 1;
+// TODO! Handle how to mine and receive transactions at the same time
+const MAX_TRANSACTIONS: usize = 4;
 
 impl Chain {
     ///
     pub fn add_deposit(&mut self, tx: Transaction, pk: &PublicKey) -> Result<(), ()> {
-        // Verify signature
+        // Step 1: Verify signature
         match tx.signature {
             Some(ref signature) if is_valid_signature(&tx, signature, &pk) => {}
             _ => return Err(()),
@@ -30,7 +29,7 @@ impl Chain {
                 for tx_x in self.mempool.drain(..) {
                     let _ = new_block.add_transaction(tx_x.clone()); // invalid txs are skipped
                 }
-                new_block.mine(3);
+                new_block.mine(self.difficulty as usize);
                 self.blocks.push(new_block);
             }
         }
@@ -42,7 +41,6 @@ impl Chain {
         if self.balance_of(&tx.from_addr) < tx.amount() {
             return Err(());
         }
-        // Verify signature
         match tx.signature {
             Some(ref signature) if is_valid_signature(&tx, signature, &pk) => {}
             _ => return Err(()),
@@ -60,33 +58,19 @@ impl Chain {
                 for tx_x in self.mempool.drain(..) {
                     let _ = new_block.add_transaction(tx_x.clone()); // invalid txs are skipped
                 }
-                new_block.mine(3);
+                new_block.mine(self.difficulty as usize);
                 self.blocks.push(new_block);
             }
         }
         Ok(())
     }
 
-    // TODO!: Verify this function because it is not done
-    pub fn deposit_to(&mut self, wallet: &Wallet, amount: usize) -> usize {
-        let tx = Transaction::new(amount, "", &wallet.address, TransactionType::Cash);
-        let amount = tx.amount();
-        self.add_transaction(tx, wallet.get_pk()).unwrap();
-        amount
-    }
-
     /// Returns a list of all transactions in the blockchain
-    pub fn get_transaction_list(&self) -> Vec<Transaction> {
+    pub fn get_transactions(&self) -> Vec<Transaction> {
         self.blocks
             .iter()
             .flat_map(|block| block.get_transactions().iter().cloned())
+            .chain(self.mempool.iter().cloned())
             .collect()
-    }
-
-    pub fn search_transaction(&self, id: &str) -> Option<&Transaction> {
-        self.blocks
-            .iter()
-            .flat_map(|block| block.get_transactions().iter())
-            .find(|&transaction| transaction.id == id)
     }
 }

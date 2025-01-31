@@ -1,6 +1,6 @@
 use sha3::{Digest, Sha3_256};
 
-use crate::block::Block;
+use crate::core::block::Block;
 
 pub fn hash_block(block: &Block) -> String {
     let bytes = bincode::serialize(block).unwrap();

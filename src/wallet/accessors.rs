@@ -1,6 +1,8 @@
+#![allow(dead_code)]
+
 use ed25519_dalek::{PublicKey, SecretKey};
 
-use crate::chain::Chain;
+use crate::core::chain::Chain;
 
 use super::Wallet;
 
@@ -21,7 +23,4 @@ impl Wallet {
     fn get_keypair(&self) -> &ed25519_dalek::Keypair {
         &self.keypair
     }
-    // pub fn update_balance(&mut self, amount: isize) {
-    //     self.balance = self.balance.saturating_add(amount as usize)
-    // }
 }

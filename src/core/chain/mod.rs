@@ -1,16 +1,16 @@
+use crate::core::{block::Block, transaction::Transaction};
 mod chain;
 mod concensus;
 mod transactions;
-use std::collections::HashMap;
 
-use crate::{block::Block, transaction::Transaction, wallet::Wallet};
+// TODO! Add coinbase_maturity config (amont of blocks needed to resolve a branch)
 
 #[derive(Debug)]
 pub struct Chain {
     blocks: Vec<Block>,
     difficulty: u32,
-    pub wallets: HashMap<String, Wallet>,
     mempool: Vec<Transaction>,
+    reward: usize,
 }
 
 impl Chain {
@@ -20,8 +20,8 @@ impl Chain {
         Chain {
             blocks: vec![genesis_block],
             difficulty: 3,
-            wallets: HashMap::new(),
             mempool: vec![],
+            reward: 10,
         }
     }
 }

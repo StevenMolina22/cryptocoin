@@ -3,6 +3,7 @@ use ed25519_dalek::Signature;
 use uuid::Uuid;
 
 pub mod accessors;
+pub mod transactions;
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct Transaction {
@@ -34,6 +35,12 @@ pub enum TransactionStatus {
     Failed,
     Expired,
     Confirmed,
+}
+
+#[derive(Debug, Hash, Clone, serde::Serialize, serde::Deserialize, PartialEq)]
+pub enum TransactionError {
+    InsufficientBalance,
+    InvalidSignature,
 }
 
 impl Transaction {

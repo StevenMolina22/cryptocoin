@@ -1,4 +1,4 @@
-use crate::transaction::Transaction;
+use crate::core::transaction::Transaction;
 use ed25519_dalek::{Keypair, PublicKey, Signature, Signer};
 
 pub fn is_valid_signature(
