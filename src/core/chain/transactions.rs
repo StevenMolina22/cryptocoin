@@ -1,21 +1,15 @@
 use super::Chain;
-use crate::{
-    core::{block::Block, transaction::Transaction},
-    crypto::is_valid_signature,
-};
-use ed25519_dalek::PublicKey;
+use crate::core::{block::Block, transaction::Transaction};
+use ed25519_dalek::{PublicKey, SignatureError};
 
 // TODO! Handle how to mine and receive transactions at the same time
 const MAX_TRANSACTIONS: usize = 4;
 
 impl Chain {
     ///
-    pub fn add_deposit(&mut self, tx: Transaction, pk: &PublicKey) -> Result<(), ()> {
-        // Step 1: Verify signature
-        match tx.signature {
-            Some(ref signature) if is_valid_signature(&tx, signature, &pk) => {}
-            _ => return Err(()),
-        }
+    pub fn add_deposit(&mut self, tx: Transaction, pk: &PublicKey) -> Result<(), SignatureError> {
+        // Step 1: Verify signature for transaction inputs
+        tx.is_valid(pk)?;
 
         // Step 2: Add to last block
         assert!(self.last_block().is_some());
@@ -33,15 +27,17 @@ impl Chain {
         Ok(())
     }
 
-    pub fn add_transaction(&mut self, tx: Transaction, pk: &PublicKey) -> Result<(), ()> {
+    // TODO! Handle errors different from signature ones
+    pub fn add_transaction(
+        &mut self,
+        tx: Transaction,
+        pk: &PublicKey,
+    ) -> Result<(), SignatureError> {
         // Step 1: Validations
         if self.balance_of(&tx.from_addr) < tx.amount() {
-            return Err(());
+            return Err(SignatureError::default());
         }
-        match tx.signature {
-            Some(ref signature) if is_valid_signature(&tx, signature, &pk) => {}
-            _ => return Err(()),
-        }
+        tx.is_valid(pk)?;
 
         // Step 2: Add to last block
         assert!(self.last_block().is_some());

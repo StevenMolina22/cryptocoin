@@ -1,4 +1,4 @@
-use ed25519_dalek::{ed25519::signature::SignerMut, Keypair};
+use ed25519_dalek::{ed25519::signature::SignerMut, Keypair, PublicKey, SignatureError};
 
 use super::{TransactionInput, TransactionOutput};
 
@@ -11,6 +11,11 @@ impl TransactionInput {
             index,
             signature: keypair.sign(&serialized_data),
         }
+    }
+
+    pub fn is_valid(&self, pk: &PublicKey) -> Result<(), SignatureError> {
+        let txinput_bytes = format!("{}:{}", self.tx_id, self.index).as_bytes().to_vec();
+        pk.verify_strict(&txinput_bytes, &self.signature)
     }
 }
 

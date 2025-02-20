@@ -8,6 +8,7 @@ pub mod transactions;
 pub mod utxo;
 
 // TODO! Add logic for transaction fees to incentivize miners
+// TODO! Add amount logic with UTXOs
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Transaction {
     pub id: String,
@@ -19,8 +20,6 @@ pub struct Transaction {
     timestamp: usize,
     tx_type: TransactionType,
     status: TransactionStatus,
-    #[serde(skip_serializing)]
-    pub signature: Option<Signature>,
 }
 
 // Serves as a reference to an UTXO
@@ -89,7 +88,6 @@ impl Transaction {
             to_addr: receiver_addr.to_string(),
             inputs: vec![],
             outputs: vec![],
-            signature: None,
             // TODO! choose a timestamp system
             timestamp: Utc::now().timestamp() as usize,
             amount,
@@ -97,19 +95,11 @@ impl Transaction {
             status: TransactionStatus::Pending,
         }
     }
-
-    /// Pre: signatura is valid
-    ///
-    /// Post: the transaction gets its signature field updated
-    pub fn sign(&mut self, signature: Signature) {
-        self.signature = Some(signature);
-    }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::crypto::{generate_key_pair, is_valid_signature, signature_from};
 
     #[test]
     fn test_create_transaction() {
@@ -125,57 +115,5 @@ mod tests {
         assert_eq!(transaction.amount, amount);
         assert_eq!(transaction.tx_type, tx_type);
         assert_eq!(transaction.status, TransactionStatus::Pending);
-        assert!(transaction.signature.is_none());
-    }
-
-    #[test]
-    fn test_sign_transaction() {
-        let sender_addr = "sender_address";
-        let receiver_addr = "receiver_address";
-        let amount = 100;
-        let tx_type = TransactionType::Cash;
-
-        let mut transaction = Transaction::new(amount, sender_addr, receiver_addr, tx_type.clone());
-        let keypair = generate_key_pair();
-        let signature = signature_from(&transaction, &keypair);
-
-        transaction.sign(signature.clone());
-
-        assert!(transaction.signature.is_some());
-        assert_eq!(transaction.signature.unwrap(), signature);
-    }
-
-    #[test]
-    fn test_verify_signature() {
-        let sender_addr = "sender_address";
-        let receiver_addr = "receiver_address";
-        let amount = 100;
-        let tx_type = TransactionType::Cash;
-
-        let transaction = Transaction::new(amount, sender_addr, receiver_addr, tx_type.clone());
-        let keypair = generate_key_pair();
-        let signature = signature_from(&transaction, &keypair);
-
-        let is_valid = is_valid_signature(&transaction, &signature, &keypair.public);
-
-        assert!(is_valid);
-    }
-
-    #[test]
-    fn test_verify_invalid_signature() {
-        let sender_addr = "sender_address";
-        let receiver_addr = "receiver_address";
-        let amount = 100;
-        let tx_type = TransactionType::Cash;
-
-        let transaction = Transaction::new(amount, sender_addr, receiver_addr, tx_type.clone());
-        let keypair = generate_key_pair();
-        let signature = signature_from(&transaction, &keypair);
-
-        // Generate a different keypair to create an invalid signature
-        let different_keypair = generate_key_pair();
-        let is_valid = is_valid_signature(&transaction, &signature, &different_keypair.public);
-
-        assert!(!is_valid);
     }
 }

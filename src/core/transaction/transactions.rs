@@ -1,9 +1,15 @@
+use ed25519_dalek::{PublicKey, SignatureError};
+
 use super::{Transaction, TransactionType};
-use crate::{
-    core::chain::Chain,
-    crypto::{is_valid_signature, signature_from},
-    wallet::Wallet,
-};
+use crate::{core::chain::Chain, wallet::Wallet};
+
+impl Transaction {
+    pub fn is_valid(&self, pk: &PublicKey) -> Result<(), SignatureError> {
+        self.inputs
+            .iter()
+            .try_for_each(|txinput| txinput.is_valid(&pk))
+    }
+}
 
 // TODO! Manage transactions states
 pub fn transfer(
@@ -11,35 +17,25 @@ pub fn transfer(
     amount: usize,
     to_addr: &str,
     blockchain: &mut Chain,
-) -> Result<(), ()> {
-    // TODO! Check if to_addr es valid
-    if amount > from_wallet.balance(blockchain) {
-        return Err(());
-    }
-    let mut tx = Transaction::new(
+) -> Result<(), SignatureError> {
+    let tx = Transaction::new(
         amount,
         &from_wallet.address,
         to_addr,
         TransactionType::DebitCard,
     );
-    tx.sign(signature_from(&tx, &from_wallet.keypair));
-    println!("debug info: {:?}", tx);
-    if !is_valid_signature(&tx, &tx.signature.unwrap(), &from_wallet.keypair.public) {
-        println!("Signature verification failed");
-        return Err(());
-    }
+    tx.is_valid(&from_wallet.keypair.public)?;
     blockchain.add_transaction(tx, &from_wallet.keypair.public)
 }
 
-pub fn deposit(amount: usize, wallet: &Wallet, blockchain: &mut Chain) -> Result<(), ()> {
-    let mut tx = Transaction::new(amount, "", &wallet.address, TransactionType::DebitCard);
-    let signature = signature_from(&tx, &wallet.keypair);
-    tx.sign(signature);
+pub fn deposit(
+    amount: usize,
+    wallet: &Wallet,
+    blockchain: &mut Chain,
+) -> Result<(), SignatureError> {
+    let tx = Transaction::new(amount, "", &wallet.address, TransactionType::DebitCard);
 
-    if !is_valid_signature(&tx, &signature, &wallet.keypair.public) {
-        println!("Signature verification failed");
-        return Err(());
-    }
+    tx.is_valid(&wallet.keypair.public)?;
     blockchain.add_deposit(tx, &wallet.keypair.public)
 }
 
