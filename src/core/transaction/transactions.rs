@@ -22,9 +22,9 @@ pub fn transfer(
         to_addr,
         TransactionType::DebitCard,
     );
-    let signature = signature_from(&tx, &from_wallet.keypair);
-    tx.sign(signature);
-    if !is_valid_signature(&tx, &signature, &from_wallet.keypair.public) {
+    tx.sign(signature_from(&tx, &from_wallet.keypair));
+    println!("debug info: {:?}", tx);
+    if !is_valid_signature(&tx, &tx.signature.unwrap(), &from_wallet.keypair.public) {
         println!("Signature verification failed");
         return Err(());
     }
@@ -35,6 +35,7 @@ pub fn deposit(amount: usize, wallet: &Wallet, blockchain: &mut Chain) -> Result
     let mut tx = Transaction::new(amount, "", &wallet.address, TransactionType::DebitCard);
     let signature = signature_from(&tx, &wallet.keypair);
     tx.sign(signature);
+
     if !is_valid_signature(&tx, &signature, &wallet.keypair.public) {
         println!("Signature verification failed");
         return Err(());
@@ -60,7 +61,7 @@ mod tests {
         let receiver_wallet = Wallet::new("receiver_address");
         let mut blockchain = Chain::new();
 
-        deposit(1000, &mut sender_wallet, &mut blockchain).unwrap();
+        deposit(1000, &sender_wallet, &mut blockchain).unwrap();
 
         let initial_sender_balance = sender_wallet.balance(&blockchain);
         let initial_receiver_balance = receiver_wallet.balance(&blockchain);
@@ -89,7 +90,7 @@ mod tests {
         assert_eq!(transactions.len(), 2);
         let tx = &transactions[1];
         assert_eq!(tx.amount(), transfer_amount);
-        assert_eq!(tx.get_sender(), sender_wallet.address);
-        assert_eq!(tx.get_receiver(), receiver_wallet.address);
+        assert_eq!(tx.sender(), sender_wallet.address);
+        assert_eq!(tx.receiver(), receiver_wallet.address);
     }
 }

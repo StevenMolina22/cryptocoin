@@ -18,20 +18,17 @@ impl Chain {
         }
 
         // Step 2: Add to last block
-        assert!(self.get_last_block().is_some());
+        assert!(self.last_block().is_some());
         self.mempool.push(tx);
 
-        if let Some(block) = self.get_last_block_mut() {
-            let last_hash = block.get_hash().unwrap();
-            if self.mempool.len() == MAX_TRANSACTIONS {
-                let mut new_block = Block::new(&last_hash, vec![]);
+        let last_hash = self.last_hash().unwrap();
 
-                for tx_x in self.mempool.drain(..) {
-                    let _ = new_block.add_transaction(tx_x.clone()); // invalid txs are skipped
-                }
-                new_block.mine(self.difficulty as usize);
-                self.blocks.push(new_block);
-            }
+        if self.mempool.len() == MAX_TRANSACTIONS {
+            let transactions = self.mempool.drain(..).collect();
+            let mut new_block = Block::new(&last_hash, transactions);
+
+            new_block.mine(self.difficulty as usize);
+            self.blocks.push(new_block);
         }
         Ok(())
     }
@@ -47,20 +44,17 @@ impl Chain {
         }
 
         // Step 2: Add to last block
-        assert!(self.get_last_block().is_some());
+        assert!(self.last_block().is_some());
         self.mempool.push(tx);
 
-        if let Some(block) = self.get_last_block_mut() {
-            let last_hash = block.get_hash().unwrap();
-            if self.mempool.len() == MAX_TRANSACTIONS {
-                let mut new_block = Block::new(&last_hash, vec![]);
+        let last_hash = self.last_hash().unwrap();
 
-                for tx_x in self.mempool.drain(..) {
-                    let _ = new_block.add_transaction(tx_x.clone()); // invalid txs are skipped
-                }
-                new_block.mine(self.difficulty as usize);
-                self.blocks.push(new_block);
-            }
+        if self.mempool.len() == MAX_TRANSACTIONS {
+            let transactions = self.mempool.drain(..).collect();
+            let mut new_block = Block::new(&last_hash, transactions);
+
+            new_block.mine(self.difficulty as usize);
+            self.blocks.push(new_block);
         }
         Ok(())
     }
@@ -69,7 +63,7 @@ impl Chain {
     pub fn get_transactions(&self) -> Vec<Transaction> {
         self.blocks
             .iter()
-            .flat_map(|block| block.get_transactions().iter().cloned())
+            .flat_map(|block| block.transactions().iter().cloned())
             .chain(self.mempool.iter().cloned())
             .collect()
     }

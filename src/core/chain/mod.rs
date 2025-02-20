@@ -1,16 +1,18 @@
+use super::transaction::UTXO;
 use crate::core::{block::Block, transaction::Transaction};
+use std::collections::HashMap;
+
 mod chain;
 mod concensus;
 mod transactions;
 
 // TODO! Add coinbase_maturity config (amont of blocks needed to resolve a branch)
-
 #[derive(Debug)]
 pub struct Chain {
     blocks: Vec<Block>,
     difficulty: u32,
     mempool: Vec<Transaction>,
-    reward: usize,
+    utxos: HashMap<(String, usize), UTXO>, // (tx_id, index) -> UTXO
 }
 
 impl Chain {
@@ -21,7 +23,8 @@ impl Chain {
             blocks: vec![genesis_block],
             difficulty: 3,
             mempool: vec![],
-            reward: 10,
+            utxos: HashMap::new(),
+            // reward: 10,
         }
     }
 }

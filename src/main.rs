@@ -6,6 +6,8 @@ mod core;
 mod crypto;
 mod wallet;
 
+/// Bitcoin like cryptocurrency implementation
+/// uses a PoW system along with UXTOs for balance handling
 fn main() {
     let mut bc = Chain::new();
     let mut from_wallet = Wallet::new("from_wallet");

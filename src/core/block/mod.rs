@@ -1,9 +1,9 @@
-use crate::crypto::hash_block;
 use chrono::Utc;
 use uuid::Uuid;
 
 use super::transaction::Transaction;
 pub mod accessors;
+pub mod pow;
 pub mod transactions;
 
 // TODO! Change hash: Option<String> to string
@@ -28,18 +28,6 @@ impl Block {
             nonce: 0,
             transactions,
             hash: None,
-        }
-    }
-
-    // TODO! Simplify this function
-    pub fn mine(&mut self, difficulty: usize) {
-        let target = "0".repeat(difficulty);
-        if self.hash.is_none() {
-            self.hash = Some(hash_block(self));
-        }
-        while !self.hash.as_ref().unwrap().starts_with(&target) {
-            self.nonce += 1;
-            self.hash = Some(hash_block(self));
         }
     }
 }

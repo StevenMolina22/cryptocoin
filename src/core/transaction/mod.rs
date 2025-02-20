@@ -1,24 +1,57 @@
-use crate::common::Date;
+use chrono::Utc;
 use ed25519_dalek::Signature;
+use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 pub mod accessors;
 pub mod transactions;
+pub mod utxo;
 
-#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+// TODO! Add logic for transaction fees to incentivize miners
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Transaction {
     pub id: String,
     pub from_addr: String,
     pub to_addr: String,
+    pub inputs: Vec<TransactionInput>,
+    pub outputs: Vec<TransactionOutput>,
     amount: usize,
-    date: Date,
+    timestamp: usize,
     tx_type: TransactionType,
     status: TransactionStatus,
     #[serde(skip_serializing)]
     pub signature: Option<Signature>,
 }
 
-#[derive(Debug, Hash, Clone, serde::Serialize, serde::Deserialize, PartialEq)]
+// Serves as a reference to an UTXO
+// its used for validation
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct TransactionInput {
+    pub tx_id: String,
+    pub index: usize,
+    #[serde(skip_serializing)]
+    signature: Signature,
+}
+
+// Serves as a blueprint for a new UTXO
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TransactionOutput {
+    pub amount: usize,
+    pub recipient: String,
+}
+
+// Serves as a descrete amount of money own by someone
+// its used for transaction creating and validation
+// (being stored in the UTXO pool)
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct UTXO {
+    pub tx_id: String,
+    pub index: usize,
+    pub amount: usize, // satoshis: (1 / 1000000) of a bitcoin
+    pub recipient: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub enum TransactionType {
     Cash,
     EFT,
@@ -28,7 +61,7 @@ pub enum TransactionType {
     WireTransfer,
 }
 
-#[derive(Debug, Clone, serde::Serialize, serde::Deserialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub enum TransactionStatus {
     Pending,
     Completed,
@@ -37,7 +70,7 @@ pub enum TransactionStatus {
     Confirmed,
 }
 
-#[derive(Debug, Hash, Clone, serde::Serialize, serde::Deserialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub enum TransactionError {
     InsufficientBalance,
     InvalidSignature,
@@ -54,13 +87,17 @@ impl Transaction {
             id: Uuid::new_v4().to_string(),
             from_addr: sender_addr.to_string(),
             to_addr: receiver_addr.to_string(),
+            inputs: vec![],
+            outputs: vec![],
             signature: None,
-            date: Date::new(0, 0, 2000),
+            // TODO! choose a timestamp system
+            timestamp: Utc::now().timestamp() as usize,
             amount,
             tx_type: transaction_type,
             status: TransactionStatus::Pending,
         }
     }
+
     /// Pre: signatura is valid
     ///
     /// Post: the transaction gets its signature field updated

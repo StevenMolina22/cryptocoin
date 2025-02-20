@@ -3,10 +3,10 @@ use crate::core::transaction::Transaction;
 use super::Block;
 
 impl Block {
-    pub fn get_transactions(&self) -> &[Transaction] {
+    pub fn transactions(&self) -> &[Transaction] {
         &self.transactions
     }
-    pub fn get_hash(&self) -> Option<String> {
+    pub fn hash(&self) -> Option<String> {
         self.hash.clone()
     }
 }
