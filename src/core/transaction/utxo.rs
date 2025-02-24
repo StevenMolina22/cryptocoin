@@ -1,6 +1,33 @@
-use ed25519_dalek::{ed25519::signature::SignerMut, Keypair, PublicKey, SignatureError};
+use ed25519_dalek::{ed25519::signature::SignerMut, Keypair, PublicKey, Signature, SignatureError};
+use serde::{Deserialize, Serialize};
 
-use super::{TransactionInput, TransactionOutput};
+// Serves as a reference to an UTXO
+// its used for validation
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct TransactionInput {
+    pub tx_id: String,
+    pub index: usize,
+    #[serde(skip_serializing)]
+    signature: Signature,
+}
+
+// Serves as a blueprint for a new UTXO
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TransactionOutput {
+    pub amount: usize,
+    pub recipient: String,
+}
+
+// Serves as a descrete amount of money own by someone
+// its used for transaction creating and validation
+// (being stored in the UTXO pool)
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct UTXO {
+    pub tx_id: String,
+    pub index: usize,
+    pub amount: usize, // satoshis: (1 / 1000000) of a coin
+    pub recipient: String,
+}
 
 impl TransactionInput {
     pub fn new(tx_id: &str, index: usize, keypair: &mut Keypair) -> Self {

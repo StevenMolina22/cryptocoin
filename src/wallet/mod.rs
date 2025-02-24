@@ -1,32 +1,22 @@
-use crate::crypto::generate_key_pair;
+use crate::{core::chain::BlockChain, crypto::generate_key_pair};
 use ed25519_dalek::Keypair;
-pub mod accessors;
-pub mod funds;
 pub mod transactions;
 
 #[derive(Debug)]
 pub struct Wallet {
+    blockchain: BlockChain,
     pub address: String,
     pub keypair: Keypair,
 }
 
 impl Wallet {
-    pub fn new(address: &str) -> Self {
+    pub fn new(blockchain: BlockChain) -> Self {
+        let keypair = generate_key_pair();
+        // TODO! hash the pk
         Wallet {
-            address: address.to_string(),
-            keypair: generate_key_pair(),
+            blockchain,
+            address: format!("{:?}", keypair.public),
+            keypair,
         }
-    }
-}
-
-#[cfg(test)]
-mod test {
-    use super::*;
-
-    #[test]
-    fn test_wallet_new() {
-        let wallet = Wallet::new("test_adress");
-        assert_eq!(wallet.address, "test_adress");
-        assert!(wallet.keypair.public.as_bytes().len() > 0);
     }
 }

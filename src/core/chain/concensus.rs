@@ -1,6 +1,6 @@
-use super::Chain;
+use super::BlockChain;
 
-impl Chain {
+impl BlockChain {
     #[allow(dead_code)]
     pub fn check_concensus() -> bool {
         todo!()

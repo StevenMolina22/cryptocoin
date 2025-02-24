@@ -1,21 +1,20 @@
-use super::Chain;
+use super::BlockChain;
 use crate::core::{block::Block, transaction::Transaction};
 use ed25519_dalek::{PublicKey, SignatureError};
 
 // TODO! Handle how to mine and receive transactions at the same time
 const MAX_TRANSACTIONS: usize = 4;
 
-impl Chain {
+impl BlockChain {
     ///
     pub fn add_deposit(&mut self, tx: Transaction, pk: &PublicKey) -> Result<(), SignatureError> {
         // Step 1: Verify signature for transaction inputs
         tx.is_valid(pk)?;
 
         // Step 2: Add to last block
-        assert!(self.last_block().is_some());
         self.mempool.push(tx);
 
-        let last_hash = self.last_hash().unwrap();
+        let last_hash = self.last_hash();
 
         if self.mempool.len() == MAX_TRANSACTIONS {
             let transactions = self.mempool.drain(..).collect();
@@ -33,17 +32,14 @@ impl Chain {
         tx: Transaction,
         pk: &PublicKey,
     ) -> Result<(), SignatureError> {
-        // Step 1: Validations
-        if self.balance_of(&tx.from_addr) < tx.amount() {
-            return Err(SignatureError::default());
-        }
+        // Validations
+        // TODO! Add enough UTXOs validation
         tx.is_valid(pk)?;
 
-        // Step 2: Add to last block
-        assert!(self.last_block().is_some());
+        // Add to last block
         self.mempool.push(tx);
 
-        let last_hash = self.last_hash().unwrap();
+        let last_hash = self.last_hash();
 
         if self.mempool.len() == MAX_TRANSACTIONS {
             let transactions = self.mempool.drain(..).collect();

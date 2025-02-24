@@ -1,7 +1,7 @@
-use core::chain::Chain;
-use core::transaction::transactions::{deposit, transfer};
+use core::block::Block;
+use core::chain::BlockChain;
+
 use wallet::Wallet;
-mod common;
 mod core;
 mod crypto;
 mod wallet;
@@ -9,19 +9,21 @@ mod wallet;
 /// Bitcoin like cryptocurrency implementation
 /// uses a PoW system along with UXTOs for balance handling
 fn main() {
-    let mut bc = Chain::new();
-    let mut from_wallet = Wallet::new("from_wallet");
-    let to_wallet = Wallet::new("to_wallet");
+    let mut wallet = Wallet::new(BlockChain::new());
 
-    deposit(100, &from_wallet, &mut bc).unwrap();
-    deposit(100, &from_wallet, &mut bc).unwrap();
-    deposit(100, &from_wallet, &mut bc).unwrap();
-    deposit(100, &from_wallet, &mut bc).unwrap();
-    deposit(100, &from_wallet, &mut bc).unwrap();
+    wallet.transfer("receiver", 10).unwrap();
 
-    transfer(&mut from_wallet, 10, &to_wallet.address, &mut bc).unwrap();
-
-    for transaction in from_wallet.get_transactions(&bc) {
+    for transaction in wallet.get_transactions() {
         println!("{:#?}", transaction)
     }
 }
+
+fn setup_miner(miner: &str, bc: &mut BlockChain) {
+    let mut coinbase_block = Block::new(&bc.last_hash(), vec![]);
+    coinbase_block.mine(bc.difficulty as usize);
+}
+
+// Note: Some useful invariants
+// - Every block in the chain has a valid hash (is_some)
+// - Every transaction in a block has a valid signature
+// -

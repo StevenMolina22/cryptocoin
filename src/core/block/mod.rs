@@ -11,7 +11,7 @@ pub mod transactions;
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct Block {
     id: String,
-    previous_hash: Option<String>,
+    previous_hash: String,
     timestamp: u64,
     nonce: u64,
     pub transactions: Vec<Transaction>,
@@ -23,7 +23,7 @@ impl Block {
     pub fn new(previous_hash: &str, transactions: Vec<Transaction>) -> Self {
         Block {
             id: Uuid::new_v4().to_string(),
-            previous_hash: Some(String::from(previous_hash)),
+            previous_hash: String::from(previous_hash),
             timestamp: Utc::now().timestamp() as u64,
             nonce: 0,
             transactions,

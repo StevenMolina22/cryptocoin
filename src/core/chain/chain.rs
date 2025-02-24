@@ -1,38 +1,23 @@
 use std::collections::HashSet;
 
-use super::Chain;
+use super::BlockChain;
 use crate::core::block::Block;
 
 // TODO! Handle forks
-impl Chain {
-    pub fn last_block(&self) -> Option<&Block> {
-        self.blocks.last()
+impl BlockChain {
+    pub fn last_block(&self) -> &Block {
+        assert!(self.blocks.last().is_some());
+        self.blocks.last().unwrap()
     }
 
-    pub fn last_hash(&self) -> Option<String> {
-        match self.blocks.last() {
-            Some(last) => last.hash(),
-            None => None,
-        }
+    pub fn last_hash(&self) -> String {
+        assert!(self.last_block().hash().is_some());
+        self.last_block().hash().unwrap()
     }
 
     #[allow(dead_code, unused_variables)]
     pub fn broadcast_block(&self, block: Block) {
         todo!()
-    }
-
-    pub fn balance_of(&self, addr: &str) -> usize {
-        self.blocks
-            .iter()
-            .flat_map(|block| &block.transactions)
-            .chain(&self.mempool)
-            .fold(0, |balance, tx| {
-                match (tx.from_addr == addr, tx.to_addr == addr) {
-                    (true, _) => balance - tx.amount(),
-                    (_, true) => balance + tx.amount(),
-                    _ => balance,
-                }
-            })
     }
 
     // TODO! check code
