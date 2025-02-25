@@ -52,6 +52,7 @@ impl Transaction {
             inputs.push(TransactionInput::new(txid, *idx, keypair));
         }
 
+        println!("acc amount: {acc_amount}");
         if acc_amount < amount {
             return Err(());
         }

@@ -3,49 +3,29 @@ use crate::core::{block::Block, transaction::Transaction};
 use ed25519_dalek::{PublicKey, SignatureError};
 
 // TODO! Handle how to mine and receive transactions at the same time
-const MAX_TRANSACTIONS: usize = 4;
+const MAX_TRANSACTIONS: usize = 1;
 
 impl BlockChain {
-    ///
-    pub fn add_deposit(&mut self, tx: Transaction, pk: &PublicKey) -> Result<(), SignatureError> {
-        // Step 1: Verify signature for transaction inputs
-        tx.is_valid(pk)?;
-
-        // Step 2: Add to last block
-        self.mempool.push(tx);
-
-        let last_hash = self.last_hash();
-
-        if self.mempool.len() == MAX_TRANSACTIONS {
-            let transactions = self.mempool.drain(..).collect();
-            let mut new_block = Block::new(&last_hash, transactions);
-
-            new_block.mine(self.difficulty as usize);
-            self.blocks.push(new_block);
-        }
-        Ok(())
-    }
-
     // TODO! Handle errors different from signature ones
-    pub fn add_transaction(
+    pub fn include_transaction(
         &mut self,
         tx: Transaction,
         pk: &PublicKey,
     ) -> Result<(), SignatureError> {
-        // Validations
         // TODO! Add enough UTXOs validation
+        // TODO! Create a system to choose a miner
         tx.is_valid(pk)?;
 
-        // Add to last block
         self.mempool.push(tx);
-
-        let last_hash = self.last_hash();
 
         if self.mempool.len() == MAX_TRANSACTIONS {
             let transactions = self.mempool.drain(..).collect();
-            let mut new_block = Block::new(&last_hash, transactions);
 
-            new_block.mine(self.difficulty as usize);
+            let mut new_block = Block::new(&self.last_hash(), "miner", self.reward, transactions);
+            new_block.mine(self.difficulty);
+
+            self.remove_input_utxos(&new_block);
+            self.create_output_utxos(&new_block);
             self.blocks.push(new_block);
         }
         Ok(())

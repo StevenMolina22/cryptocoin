@@ -12,22 +12,23 @@ pub struct BlockChain {
     blocks: Vec<Block>,
     mempool: Vec<Transaction>,
     pub utxos: UTXOPool,
-    pub difficulty: u32,
-    reward: usize,
+    pub difficulty: usize,
+    pub reward: usize,
 }
 
 type UTXOPool = HashMap<(String, usize), UTXO>; // (tx_id, idx) -> UTXO
 
 impl BlockChain {
     pub fn new() -> BlockChain {
-        let mut genesis_block = Block::new("", vec![]);
+        let reward = 50 * 1_000_000; // 50 coins
+        let mut genesis_block = Block::new("", "", reward, vec![]);
         genesis_block.mine(3);
         BlockChain {
             blocks: vec![genesis_block],
             difficulty: 3,
             mempool: vec![],
             utxos: HashMap::new(),
-            reward: 50 * 1_000_000, // 50 coins
+            reward,
         }
     }
 }

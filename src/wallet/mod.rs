@@ -4,7 +4,7 @@ pub mod transactions;
 
 #[derive(Debug)]
 pub struct Wallet {
-    blockchain: BlockChain,
+    pub blockchain: BlockChain,
     pub address: String,
     pub keypair: Keypair,
 }

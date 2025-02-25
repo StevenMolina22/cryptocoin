@@ -20,7 +20,13 @@ pub struct Block {
 }
 
 impl Block {
-    pub fn new(previous_hash: &str, transactions: Vec<Transaction>) -> Self {
+    pub fn new(
+        previous_hash: &str,
+        miner: &str,
+        reward: usize,
+        mut transactions: Vec<Transaction>,
+    ) -> Self {
+        transactions.push(Transaction::new_coinbase(miner, reward));
         Block {
             id: Uuid::new_v4().to_string(),
             previous_hash: String::from(previous_hash),

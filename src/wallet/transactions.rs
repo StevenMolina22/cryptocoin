@@ -18,6 +18,8 @@ impl Wallet {
         )
         .unwrap();
         tx.is_valid(&self.keypair.public)?;
-        self.blockchain.add_transaction(tx, &self.keypair.public)
+        // TODO! create a system to choose a miner
+        self.blockchain
+            .include_transaction(tx, &self.keypair.public)
     }
 }

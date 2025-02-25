@@ -54,3 +54,14 @@ impl TransactionOutput {
         }
     }
 }
+
+impl UTXO {
+    pub fn new(txid: &str, idx: usize, amount: usize, recipient: &str) -> Self {
+        UTXO {
+            tx_id: txid.to_string(),
+            index: idx,
+            amount,
+            recipient: recipient.to_string(),
+        }
+    }
+}
