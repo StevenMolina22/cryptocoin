@@ -1,23 +1,16 @@
-use std::collections::HashSet;
+use crate::core::block::Block;
 
 use super::BlockChain;
-use crate::core::block::Block;
+use std::collections::HashSet;
 
 // TODO! Handle forks
 impl BlockChain {
-    pub fn last_block(&self) -> &Block {
-        assert!(self.blocks.last().is_some());
-        self.blocks.last().unwrap()
-    }
-
     pub fn last_hash(&self) -> String {
-        assert!(self.last_block().hash().is_some());
-        self.last_block().hash().unwrap()
+        self.blocks.last().unwrap().hash().unwrap()
     }
 
-    #[allow(dead_code, unused_variables)]
-    pub fn broadcast_block(&self, block: Block) {
-        todo!()
+    pub fn add_block(&mut self, block: Block) {
+        self.blocks.push(block);
     }
 
     // TODO! check code
@@ -53,5 +46,12 @@ impl BlockChain {
             .sum();
 
         confirmed_balance + pending_balance
+    }
+
+    pub fn update_from(&mut self, block: Block) {
+        self.remove_input_utxos(&block);
+        self.create_output_utxos(&block);
+        self.mempool.retain(|tx| !block.transactions.contains(tx));
+        self.blocks.push(block);
     }
 }

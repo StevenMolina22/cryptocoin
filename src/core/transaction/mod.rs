@@ -2,7 +2,7 @@ use ed25519_dalek::Keypair;
 use serde::{Deserialize, Serialize};
 use sha3::{Digest, Sha3_256};
 use std::collections::HashMap;
-use utxo::{TransactionInput, TransactionOutput, UTXO};
+use utxo::{TxInput, TxOutput, UTXO};
 
 pub mod accessors;
 pub mod transactions;
@@ -10,12 +10,12 @@ pub mod utxo;
 
 // TODO! Add logic for transaction fees to incentivize miners
 // TODO! Add amount logic with UTXOs
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct Transaction {
     #[serde(skip_serializing)]
     pub id: String,
-    pub inputs: Vec<TransactionInput>,
-    pub outputs: Vec<TransactionOutput>,
+    pub inputs: Vec<TxInput>,
+    pub outputs: Vec<TxOutput>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -49,7 +49,7 @@ impl Transaction {
                 break;
             }
             acc_amount += utxo.amount;
-            inputs.push(TransactionInput::new(txid, *idx, keypair));
+            inputs.push(TxInput::new(txid, *idx, keypair));
         }
 
         println!("acc amount: {acc_amount}");
@@ -58,9 +58,9 @@ impl Transaction {
         }
 
         // Create outputs
-        let mut outputs = vec![TransactionOutput::new(recipient, amount)];
+        let mut outputs = vec![TxOutput::new(recipient, amount)];
         if acc_amount > amount {
-            outputs.push(TransactionOutput::new(sender, acc_amount - amount))
+            outputs.push(TxOutput::new(sender, acc_amount - amount))
         }
 
         let mut tx = Self {
@@ -84,7 +84,7 @@ impl Transaction {
         let mut tx = Self {
             id: String::from(""), // temporary
             inputs: vec![],
-            outputs: vec![TransactionOutput::new(recipient, reward)],
+            outputs: vec![TxOutput::new(recipient, reward)],
         };
         tx.id = tx.compute_id();
         tx

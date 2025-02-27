@@ -4,13 +4,14 @@ use std::collections::HashMap;
 
 mod chain;
 mod concensus;
+pub mod mempool;
 mod transactions;
 
 // TODO! Add coinbase_maturity config (amont of blocks needed to resolve a branch)
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct BlockChain {
-    blocks: Vec<Block>,
-    mempool: Vec<Transaction>,
+    pub blocks: Vec<Block>,
+    pub mempool: Vec<Transaction>,
     pub utxos: UTXOPool,
     pub difficulty: usize,
     pub reward: usize,
@@ -21,7 +22,7 @@ type UTXOPool = HashMap<(String, usize), UTXO>; // (tx_id, idx) -> UTXO
 impl BlockChain {
     pub fn new() -> BlockChain {
         let reward = 50 * 1_000_000; // 50 coins
-        let mut genesis_block = Block::new("", "", reward, vec![]);
+        let mut genesis_block = Block::new_template("", "", reward, vec![]);
         genesis_block.mine(3);
         BlockChain {
             blocks: vec![genesis_block],

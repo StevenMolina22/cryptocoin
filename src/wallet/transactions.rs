@@ -18,7 +18,7 @@ impl Wallet {
         )
         .unwrap();
         tx.is_valid(&self.keypair.public)?;
-        // TODO! create a system to choose a miner
+        // simulate broadcasting
         self.blockchain
             .include_transaction(tx, &self.keypair.public)
     }

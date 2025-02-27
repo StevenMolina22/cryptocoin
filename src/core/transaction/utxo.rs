@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 // Serves as a reference to an UTXO
 // its used for validation
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
-pub struct TransactionInput {
+pub struct TxInput {
     pub tx_id: String,
     pub index: usize,
     #[serde(skip_serializing)]
@@ -12,8 +12,8 @@ pub struct TransactionInput {
 }
 
 // Serves as a blueprint for a new UTXO
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct TransactionOutput {
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct TxOutput {
     pub amount: usize,
     pub recipient: String,
 }
@@ -29,11 +29,11 @@ pub struct UTXO {
     pub recipient: String,
 }
 
-impl TransactionInput {
+impl TxInput {
     pub fn new(tx_id: &str, index: usize, keypair: &mut Keypair) -> Self {
         let serialized_data = format!("{}:{}", tx_id, index).as_bytes().to_vec();
 
-        TransactionInput {
+        TxInput {
             tx_id: tx_id.to_string(),
             index,
             signature: keypair.sign(&serialized_data),
@@ -46,9 +46,9 @@ impl TransactionInput {
     }
 }
 
-impl TransactionOutput {
+impl TxOutput {
     pub fn new(recipient: &str, amount: usize) -> Self {
-        TransactionOutput {
+        TxOutput {
             recipient: recipient.to_string(),
             amount,
         }

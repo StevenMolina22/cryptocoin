@@ -1,3 +1,5 @@
+use ed25519_dalek::SignatureError;
+
 use super::Block;
 use crate::crypto::hash_block;
 
@@ -11,6 +13,15 @@ impl Block {
         while !self.hash.as_ref().unwrap().starts_with(&target) {
             self.nonce += 1;
             self.hash = Some(hash_block(self));
+        }
+    }
+
+    pub fn is_valid(&self, difficulty: usize) -> Result<(), SignatureError> {
+        // TODO! Validate the transactions inside the block
+        let target = "0".repeat(difficulty);
+        match self.hash.as_ref().unwrap().starts_with(&target) {
+            true => Ok(()),
+            false => Err(SignatureError::new()),
         }
     }
 }

@@ -20,7 +20,7 @@ pub struct Block {
 }
 
 impl Block {
-    pub fn new(
+    pub fn new_template(
         previous_hash: &str,
         miner: &str,
         reward: usize,
