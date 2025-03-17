@@ -27,6 +27,8 @@ mod wallet;
 /// **TODO**! Simulate fraudulent transactions and nodes
 ///
 /// **TODO**! Decide if an Arc Blockchain is of more use than a cloned one
+///
+/// **TODO**! Handle UTXOs for multiple transactions
 fn main() {
     // --- BlockChain bootstrapping
     let chain = BlockChain::new();
@@ -35,7 +37,7 @@ fn main() {
     wallet.blockchain.setup_miner(&wallet.address);
 
     // --- Wallet user
-    let transaction_amounts = [2 * 1_000_000, 1 * 1_000_000, 1 * 1_000_000, 1 * 1_000_000];
+    let transaction_amounts = [2 * 1_000_000];
     let transactions: Vec<_> = transaction_amounts
         .into_iter()
         .map(|amount| wallet_transfer(&mut wallet, &receiver.address, amount).unwrap())
