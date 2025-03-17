@@ -41,7 +41,7 @@ fn main() {
         .map(|amount| wallet_transfer(&mut wallet, &receiver.address, amount).unwrap())
         .collect();
 
-    // --- Validation node (transactions)
+    // --- Validator node (transactions)
     let mut node_tx = Node::new(chain.clone());
     let validations: Vec<_> = transactions
         .into_iter()
@@ -52,7 +52,7 @@ fn main() {
     let mut miner = Node::new(chain.clone());
     let block = miner.mine(validations, &wallet.keypair.public).unwrap();
 
-    // --- Validation node (blocks)
+    // --- Validator node (blocks)
     let mut node_block = Node::new(chain.clone());
     let block = node_block.validate_block(block);
 
@@ -94,6 +94,7 @@ impl Node {
         transactions: Vec<Transaction>,
         pk: &PublicKey,
     ) -> Result<Block, SignatureError> {
+        // TODO! validate UTXOs in the mempool before adding to it
         transactions.iter().try_for_each(|tx| tx.is_valid(pk))?;
         transactions
             .into_iter()
@@ -107,14 +108,12 @@ impl Node {
         );
         block.mine(self.blockchain.difficulty);
         self.blockchain.update_from(block.clone());
-        // TODO! Update mempool and utxo set
         Ok(block.broadcast())
     }
 
     pub fn validate_block(&mut self, block: Block) -> Result<Block, SignatureError> {
         block.is_valid(self.blockchain.difficulty)?;
         self.blockchain.update_from(block.clone());
-        // TODO! Update mempool and utxo set
         Ok(block.broadcast())
     }
 }

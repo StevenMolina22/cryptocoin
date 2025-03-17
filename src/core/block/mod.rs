@@ -20,6 +20,7 @@ pub struct Block {
 }
 
 impl Block {
+    // TODO! verify that two transactions in the block do not use the same UTXO
     pub fn new_template(
         previous_hash: &str,
         miner: &str,

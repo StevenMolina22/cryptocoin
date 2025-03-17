@@ -20,6 +20,7 @@ pub struct BlockChain {
 type UTXOPool = HashMap<(String, usize), UTXO>; // (tx_id, idx) -> UTXO
 
 impl BlockChain {
+    // TODO! verify that two transactions in the mempool do not use the same UTXO
     pub fn new() -> BlockChain {
         let reward = 50 * 1_000_000; // 50 coins
         let mut genesis_block = Block::new_template("", "", reward, vec![]);

@@ -31,7 +31,7 @@ impl Transaction {
         amount: usize,
         sender: &str,
         recipient: &str,
-        utxos: &mut UTXOPool,
+        utxos: &UTXOPool,
         keypair: &mut Keypair,
     ) -> Result<Self, ()> {
         // Search for available inputs
@@ -52,7 +52,6 @@ impl Transaction {
             inputs.push(TxInput::new(txid, *idx, keypair));
         }
 
-        println!("acc amount: {acc_amount}");
         if acc_amount < amount {
             return Err(());
         }
