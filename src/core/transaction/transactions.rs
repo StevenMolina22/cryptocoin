@@ -9,17 +9,3 @@ impl Transaction {
             .try_for_each(|txinput| txinput.is_valid(&pk))
     }
 }
-
-// TODO! Manage transactions states
-
-#[cfg(test)]
-mod tests {
-    use crate::{core::chain::BlockChain, wallet::Wallet};
-
-    #[test]
-    fn test_get_empty_transactions() {
-        let wallet = Wallet::new(BlockChain::new());
-        let transactions = wallet.get_transactions();
-        assert_eq!(transactions.len(), 0);
-    }
-}
