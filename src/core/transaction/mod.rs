@@ -8,7 +8,7 @@ pub mod transactions;
 pub mod utxo;
 
 /// Represents a blockchain transaction that transfers value between addresses
-/// 
+///
 /// A transaction consists of inputs (consumed UTXOs) and outputs (created UTXOs).
 /// Each transaction has a unique ID computed from its contents.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -22,9 +22,7 @@ pub struct Transaction {
 /// Possible errors that can occur during transaction processing
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub enum TransactionError {
-    /// Indicates the sender doesn't have enough funds to complete the transaction
     InsufficientBalance,
-    /// Indicates the transaction signature verification failed
     InvalidSignature,
 }
 
@@ -33,17 +31,6 @@ type UTXOPool = HashMap<(String, usize), UTXO>;
 
 impl Transaction {
     /// Creates a new transaction transferring funds from sender to recipient
-    ///
-    /// # Arguments
-    /// * `amount` - The amount to transfer
-    /// * `sender` - The sender's address
-    /// * `recipient` - The recipient's address
-    /// * `utxos` - The current UTXO pool to draw funds from
-    /// * `keypair` - The sender's keypair for signing inputs
-    ///
-    /// # Returns
-    /// * `Ok(Transaction)` - The created transaction if successful
-    /// * `Err(())` - If there are insufficient funds
     pub fn new(
         amount: usize,
         sender: &str,
@@ -102,10 +89,6 @@ impl Transaction {
     /// Creates a new coinbase transaction that generates new coins for a miner
     ///
     /// Coinbase transactions have no inputs and create new currency.
-    ///
-    /// # Arguments
-    /// * `recipient` - The miner's address to receive the reward
-    /// * `reward` - The mining reward amount
     pub fn new_coinbase(recipient: &str, reward: usize) -> Self {
         let mut tx = Self {
             id: String::from(""), // temporary ID, will be computed

@@ -54,11 +54,6 @@ impl TxInput {
 }
 
 impl TxOutput {
-    /// Creates a new transaction output
-    ///
-    /// # Arguments
-    /// * `recipient` - The address of the recipient
-    /// * `amount` - The amount to transfer
     pub fn new(recipient: &str, amount: usize) -> Self {
         TxOutput {
             recipient: recipient.to_string(),
@@ -68,13 +63,6 @@ impl TxOutput {
 }
 
 impl UTXO {
-    /// Creates a new Unspent Transaction Output
-    ///
-    /// # Arguments
-    /// * `txid` - The transaction ID that created this UTXO
-    /// * `idx` - The index of this output in the transaction
-    /// * `amount` - The amount of currency in this UTXO
-    /// * `recipient` - The address of the owner
     pub fn new(txid: &str, idx: usize, amount: usize, recipient: &str) -> Self {
         UTXO {
             tx_id: txid.to_string(),
