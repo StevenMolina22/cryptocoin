@@ -1,4 +1,4 @@
-# Bitcoin-like Cryptocurrency Implementation in Rust - Updated README
+# Bitcoin-like Cryptocurrency Implementation in Rust
 
 ## Table of Contents
 
