@@ -1,5 +1,3 @@
-use crate::core::transaction::Transaction;
-
 use super::Block;
 
 impl Block {

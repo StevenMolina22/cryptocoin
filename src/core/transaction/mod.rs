@@ -1,8 +1,8 @@
 use ed25519_dalek::Keypair;
 use serde::{Deserialize, Serialize};
-use sha3::{Digest, Sha3_256};
 use std::collections::HashMap;
 use utxo::{TxInput, TxOutput, UTXO};
+use uuid::Uuid;
 
 pub mod transactions;
 pub mod utxo;
@@ -13,10 +13,9 @@ pub mod utxo;
 /// Each transaction has a unique ID computed from its contents.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct Transaction {
-    #[serde(skip_serializing)]
-    pub id: String,
     pub inputs: Vec<TxInput>,
     pub outputs: Vec<TxOutput>,
+    pub id: String,
 }
 
 /// Possible errors that can occur during transaction processing
@@ -68,34 +67,22 @@ impl Transaction {
             outputs.push(TxOutput::new(sender, acc_amount - amount))
         }
 
-        let mut tx = Self {
-            id: String::from(""), // temporary ID, will be computed
+        let tx = Self {
+            id: Uuid::new_v4().to_string(),
             inputs,
             outputs,
         };
-        tx.id = tx.compute_id();
         Ok(tx)
-    }
-
-    /// Computes the unique ID for this transaction by hashing its serialized form
-    fn compute_id(&self) -> String {
-        let serialized = serde_json::to_vec(self).unwrap();
-        let mut hasher = Sha3_256::new();
-        hasher.update(&serialized);
-
-        format!("{:x}", hasher.finalize())
     }
 
     /// Creates a new coinbase transaction that generates new coins for a miner
     ///
     /// Coinbase transactions have no inputs and create new currency.
     pub fn new_coinbase(recipient: &str, reward: usize) -> Self {
-        let mut tx = Self {
-            id: String::from(""), // temporary ID, will be computed
+        Self {
+            id: Uuid::new_v4().to_string(),
             inputs: vec![],
             outputs: vec![TxOutput::new(recipient, reward)],
-        };
-        tx.id = tx.compute_id();
-        tx
+        }
     }
 }

@@ -36,33 +36,49 @@ fn main() {
     // --- BlockChain bootstrapping
     let chain = BlockChain::new();
     let mut wallet = Wallet::new(chain.clone());
-    let receiver = Wallet::new(chain.clone()); // receiver chain state does not get updated
-    wallet.blockchain.setup_miner(&wallet.address);
+    // receiver chain state does not get updated
+    let receiver = Wallet::new(chain.clone());
+
+    // get more than one utxo for more than one transaction
+    wallet.blockchain.mine_funds_for(&wallet.address);
+    wallet.blockchain.mine_funds_for(&wallet.address);
+    wallet.blockchain.mine_funds_for(&wallet.address);
 
     // --- Wallet user
-    let transaction_amounts = [2 * 1_000_000];
+    let transaction_amounts = [2 * 1_000_000, 5 * 1_000_000, 10 * 1_000_000];
     let transactions: Vec<_> = transaction_amounts
         .into_iter()
         .map(|amount| wallet_transfer(&mut wallet, &receiver.address, amount).unwrap())
         .collect();
 
     // --- Validator node (transactions)
-    let mut node_tx = Node::new(chain.clone());
+    let mut node_tx = Node::new(Wallet::new(chain.clone()));
     let validations: Vec<_> = transactions
         .into_iter()
         .map(|tx| node_tx.validate_tx(tx, &wallet.keypair.public).unwrap())
         .collect();
 
     // --- Miner node
-    let mut miner = Node::new(chain.clone());
+    let mut miner = Node::new(Wallet::new(chain.clone()));
     let block = miner.mine(validations, &wallet.keypair.public).unwrap();
 
     // --- Validator node (blocks)
-    let mut node_block = Node::new(chain.clone());
+    let mut node_block = Node::new(Wallet::new(chain.clone()));
     let block = node_block.validate_block(block);
 
-    println!("Block: \n{:#?}", block);
-    println!("UTXOS: \n{:#?}", node_block.blockchain.utxos);
+    println!("Blockchain: \n{:#?}\n\n", node_block.wallet.blockchain);
+    println!(
+        "UTXOS for wallet: \n{:#?}\n",
+        node_block.wallet.blockchain.utxos_of(&wallet.address)
+    );
+    println!(
+        "UTXOS for receiver: \n{:#?}\n",
+        node_block.wallet.blockchain.utxos_of(&receiver.address)
+    );
+    println!(
+        "UTXOS for miner: \n{:#?}\n",
+        node_block.wallet.blockchain.utxos_of(&miner.wallet.address)
+    )
 }
 
 /// Creates and signs a transaction from a wallet to a receiver
@@ -95,7 +111,7 @@ impl Node {
     ) -> Result<Transaction, SignatureError> {
         tx.is_valid(pk)?;
         // Update chain by adding the transaction to the mempool
-        self.blockchain.mempool.push(tx.clone());
+        self.wallet.blockchain.mempool.push(tx.clone());
         Ok(tx.broadcast())
     }
 
@@ -118,23 +134,23 @@ impl Node {
         transactions.iter().try_for_each(|tx| tx.is_valid(pk))?;
         transactions
             .into_iter()
-            .for_each(|tx| self.blockchain.mempool.push(tx));
+            .for_each(|tx| self.wallet.blockchain.mempool.push(tx));
 
         let mut block = Block::new_template(
-            &self.blockchain.last_hash(),
-            "miner",
-            self.blockchain.reward,
-            self.blockchain.mempool.clone(),
+            &self.wallet.blockchain.last_hash(),
+            &self.wallet.address,
+            self.wallet.blockchain.reward,
+            self.wallet.blockchain.mempool.clone(),
         );
-        block.mine(self.blockchain.difficulty);
-        self.blockchain.update_from(block.clone());
+        block.mine(self.wallet.blockchain.difficulty);
+        self.wallet.blockchain.update_from(block.clone());
         Ok(block.broadcast())
     }
 
     /// Validates a block and adds it to the blockchain
     pub fn validate_block(&mut self, block: Block) -> Result<Block, SignatureError> {
-        block.is_valid(self.blockchain.difficulty)?;
-        self.blockchain.update_from(block.clone());
+        block.is_valid(self.wallet.blockchain.difficulty)?;
+        self.wallet.blockchain.update_from(block.clone());
         Ok(block.broadcast())
     }
 }
