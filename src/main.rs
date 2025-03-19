@@ -6,30 +6,32 @@ mod core;
 mod crypto;
 mod wallet;
 
-/// **Bitcoin** like cryptocurrency implementation, it uses:
-/// - PoW consensus mechanism
-/// - UXTOs balance & funds handling
+/// # Description
+/// Bitcoin-like cryptocurrency implementation
 ///
-/// The main function is a simulation of different nodes
-/// working in the network
-/// - The listening of a node for information
-/// will be represented as taking that information as input,
-/// - The broadcasting of a node's information will be the output
-/// of the broadcast method
+/// This project implements a simplified cryptocurrency with the following features:
+/// - Proof of Work (PoW) consensus mechanism
+/// - Unspent Transaction Output (UTXO) model for balance and funds handling
 ///
-/// (This is done for testing purposes,
-/// while proper network management is introduced into the app)
+/// The main function simulates different nodes working in the network:
+/// - Node listening is represented by taking information as input
+/// - Node broadcasting is represented by the output of broadcast methods
 ///
-/// Extra notes:
-/// - Validation is redundant to simulate multiple validations
-/// in a real network
+/// This simulation approach is used for testing purposes while proper
+/// network management is being developed.
 ///
-/// **TODO**:
+/// # Implementation Notes
+/// - Validation is intentionally redundant to simulate multiple validations
+///   that would occur in a real network
+///
+/// # TODO
 /// - Simulate fraudulent transactions and nodes
-/// - Decide if an Arc Blockchain is of more use than a cloned one
+/// - Evaluate if choosing an Arc<Blockchain> or cloning
 /// - Implement Canonical and Dynamic UTXO set
 /// - Implement a fork handling system
 /// - Improve error handling
+/// - Define clearer interfaces
+/// - Implement strategic testing
 fn main() {
     // --- BlockChain bootstrapping
     let chain = BlockChain::new();
@@ -63,7 +65,11 @@ fn main() {
     println!("UTXOS: \n{:#?}", node_block.blockchain.utxos);
 }
 
-pub fn wallet_transfer(
+/// Creates and signs a transaction from a wallet to a receiver
+///
+/// This function creates a new transaction, validates it with the sender's
+/// public key, and returns a broadcast-ready transaction.
+fn wallet_transfer(
     wallet: &mut Wallet,
     receiver: &str,
     amount: usize,
@@ -81,23 +87,34 @@ pub fn wallet_transfer(
 }
 
 impl Node {
+    /// Validates a transaction and adds it to the mempool
     pub fn validate_tx(
         &mut self,
         tx: Transaction,
         pk: &PublicKey,
     ) -> Result<Transaction, SignatureError> {
         tx.is_valid(pk)?;
-        // update chain
+        // Update chain by adding the transaction to the mempool
         self.blockchain.mempool.push(tx.clone());
         Ok(tx.broadcast())
     }
 
+    /// Mines a new block with the provided transactions
+    ///
+    /// This function:
+    /// 1. Validates all transactions
+    /// 2. Adds them to the mempool
+    /// 3. Creates a block template with a coinbase transaction
+    /// 4. Performs proof-of-work mining
+    /// 5. Updates the blockchain with the new block
+    ///
+    /// # TODO
+    /// - Validate UTXOs in the mempool before adding to it (Dynamic vs Canonical UTXO set)
     pub fn mine(
         &mut self,
         transactions: Vec<Transaction>,
         pk: &PublicKey,
     ) -> Result<Block, SignatureError> {
-        // TODO! validate UTXOs in the mempool before adding to it (Dynamic vs Canonical UTXO set)
         transactions.iter().try_for_each(|tx| tx.is_valid(pk))?;
         transactions
             .into_iter()
@@ -114,6 +131,7 @@ impl Node {
         Ok(block.broadcast())
     }
 
+    /// Validates a block and adds it to the blockchain
     pub fn validate_block(&mut self, block: Block) -> Result<Block, SignatureError> {
         block.is_valid(self.blockchain.difficulty)?;
         self.blockchain.update_from(block.clone());

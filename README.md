@@ -1,4 +1,4 @@
-# Bitcoin-like Cryptocurrency Implementation in Rust
+# Bitcoin-like Cryptocurrency Implementation in Rust - Updated README
 
 ## Table of Contents
 
@@ -22,7 +22,7 @@
 
 ## 1. Introduction
 
-This project is a simplified Bitcoin-like cryptocurrency implemented in Rust. It’s designed as both an educational and experimental platform, demonstrating core blockchain principles such as decentralized ledger management, transaction validation, Proof of Work (PoW) consensus, and secure cryptographic operations. Though still in early development, it provides a solid foundation for understanding and extending blockchain technology.
+This project is a simplified Bitcoin-like cryptocurrency implemented in Rust. It's designed as both an educational and experimental platform, demonstrating core blockchain principles such as decentralized ledger management, transaction validation, Proof of Work (PoW) consensus, and secure cryptographic operations. Though still in early development, it provides a solid foundation for understanding and extending blockchain technology.
 
 ## 2. Project Goals
 
@@ -56,39 +56,38 @@ src
 ├── core
 │  ├── block
 │  │  ├── accessors.rs         # Functions to retrieve block properties
-│  │  ├── mod.rs               # Block module interface
+│  │  ├── mod.rs               # Block module interface and definitions
 │  │  ├── pow.rs               # Proof of Work implementation (mining)
 │  │  └── transactions.rs      # Block-specific transaction handling
 │  ├── chain
 │  │  ├── chain.rs             # Blockchain management and ledger state
-│  │  ├── concensus.rs         # Consensus rules and conflict resolution
+│  │  ├── consensus.rs         # Consensus rules and conflict resolution
 │  │  ├── mempool.rs           # Management of pending transactions
-│  │  ├── mod.rs               # Chain module interface
+│  │  ├── mod.rs               # Chain module interface and BlockChain definition
 │  │  └── transactions.rs      # Transaction integration within the chain
-│  ├── cli                    # Command-line interface for direct blockchain interaction
-│  ├── mod.rs                 # Entry point for core functionalities
+│  ├── cli
+│  │  └── mod.rs               # Command-line interface for direct blockchain interaction
+│  ├── mod.rs                  # Entry point for core functionalities
 │  ├── network
 │  │  ├── block.rs             # Block propagation and network validation logic
 │  │  ├── blockchain.rs        # Synchronization of blockchain states across nodes
-│  │  ├── mod.rs               # Network module interface
+│  │  ├── mod.rs               # Network module interface and Node definition
 │  │  └── transaction.rs       # Network transaction broadcasting and validation
 │  ├── rcp
-│  │  └── mod.rs               # Remote procedure call (API) interfaces (if applicable)
+│  │  └── mod.rs               # Remote procedure call (API) interfaces
 │  └── transaction
-│     ├── accessors.rs         # Functions to access and parse transaction data
-│     ├── mod.rs               # Transaction module interface
+│     ├── mod.rs               # Transaction module interface and definitions
 │     ├── transactions.rs      # Creation, signing, and validation of transactions
 │     └── utxo.rs              # Unspent Transaction Output (UTXO) management
 ├── crypto
-│  ├── hashing.rs             # Cryptographic hashing functions (e.g., SHA3-256)
-│  ├── keys.rs                # Key generation and key pair management
-│  ├── mod.rs                 # Crypto module entry point
-│  └── signatures.rs          # Digital signature creation and verification routines
-├── main.rs                  # Entry point for simulation and testing
+│  ├── hashing.rs              # Cryptographic hashing functions (SHA3-256)
+│  ├── keys.rs                 # Key generation and key pair management
+│  ├── mod.rs                  # Crypto module entry point
+│  └── signatures.rs           # Digital signature creation and verification routines
+├── main.rs                    # Entry point with simulation and testing
 └── wallet
-   ├── mod.rs                # Wallet interface; handles key management and user operations
-   └── transactions.rs       # Wallet-specific transaction construction and processing
-
+   ├── mod.rs                  # Wallet interface; handles key management
+   └── transactions.rs         # Wallet-specific transaction construction
 ```
 
 ## 5. Module Details
@@ -104,92 +103,103 @@ The `core` module is the heart of the blockchain logic, encompassing several sub
     - Mine blocks by solving the PoW challenge defined in `pow.rs`.
     - Provide accessor functions for querying block data.
 - **Key Features**:
-    - **Proof of Work (PoW)**: Implemented in `pow.rs`, it ensures that new blocks satisfy a predefined difficulty.
-    - **Transaction Aggregation**: Blocks are assembled from validated transactions and include a coinbase transaction to reward miners.
+    - **Proof of Work (PoW)**: Implemented in `pow.rs`, it ensures that new blocks satisfy a predefined difficulty by finding a nonce that produces a hash with required leading zeros.
+    - **Block Structure**: Contains ID, previous hash, timestamp, nonce, transactions list, and own hash.
+    - **Block Creation**: `new_template` method creates a block ready for mining, including a coinbase transaction to reward miners.
 
 ### 5.1.2 Chain Submodule (`core/chain`)
 
 - **Responsibilities**:
     - Manage the blockchain ledger, ensuring proper block order and integrity.
-    - Initialize the genesis block and append new blocks after validation.
-    - Resolve chain conflicts using consensus rules.
+    - Maintain the UTXO set to track unspent transaction outputs.
+    - Handle transaction validation and inclusion in blocks.
 - **Key Components**:
-    - **Chain Management (`chain.rs`)**: Handles the sequential addition of blocks.
-    - **Consensus (`concensus.rs`)**: Contains rules for block validation and fork resolution.
-    - **Mempool (`mempool.rs`)**: Temporarily holds unconfirmed transactions before block inclusion.
+    - **BlockChain Structure**: Manages blocks, mempool, UTXOs, difficulty, and reward.
+    - **UTXO Management**: Methods for adding and removing UTXOs when processing blocks.
+    - **Transaction Processing**: `include_transaction` method validates and adds transactions to the mempool.
+    - **Block Processing**: `update_from` method adds a block to the chain and updates the UTXO set accordingly.
 
 ### 5.1.3 Network Submodule (`core/network`)
 
 - **Responsibilities**:
-    - Simulate decentralized network behavior by propagating transactions and blocks among nodes.
-    - Synchronize blockchain copies across simulated nodes.
+    - Simulate decentralized network behavior for testing and development.
+    - Define Node structure that manages blockchain operations in a network context.
 - **Key Components**:
-    - **Block and Blockchain Propagation**: `block.rs` and `blockchain.rs` manage the reception and validation of new blocks.
-    - **Transaction Handling**: `transaction.rs` deals with broadcasting and validating transactions across the network.
+    - **Node Implementation**: Contains methods for validating transactions, mining new blocks, and validating blocks.
+    - **Simulation Methods**: `broadcast` methods that simulate network propagation of blocks and transactions.
 
 ### 5.1.4 Transaction Submodule (`core/transaction`)
 
 - **Responsibilities**:
-    - Create and process transactions, ensuring each transaction adheres to UTXO based rules.
-    - Manage transaction signatures and compute unique transaction IDs.
+    - Define the structure and behavior of transactions in the blockchain.
+    - Manage transaction creation, validation, and UTXO handling.
 - **Key Components**:
-    - **Transaction Creation and Validation (`transactions.rs`)**: Constructs transactions and performs signature checks.
-    - **UTXO Management (`utxo.rs`)**: Tracks which outputs remain unspent to prevent double-spending.
-    - **Accessors (`accessors.rs`)**: Facilitate data extraction from transaction structures.
+    - **Transaction Structure**: Contains ID, inputs, and outputs.
+    - **UTXO Implementation**: TxInput, TxOutput, and UTXO structures for the UTXO model.
+    - **Transaction Creation**: Methods for creating both regular and coinbase transactions.
+    - **Validation**: `is_valid` method to verify transaction signatures.
 
 ### 5.1.5 CLI and RCP Submodules
 
-- **CLI**: Provides a command-line interface for testing and administrative interactions with the blockchain.
-- **RCP**: Offers potential remote procedure call interfaces for future API integration, enabling external systems to interact with the blockchain.
+- **CLI**: Currently a placeholder module for future command-line interface implementation.
+- **RCP**: Placeholder for future remote procedure call interfaces.
 
 ### 5.2 Crypto Module
 
-The `crypto` module underpins the security of the system with the following responsibilities:
+The `crypto` module provides cryptographic functionality:
 
-- **Hashing (`hashing.rs`)**: Implements robust cryptographic hash functions to ensure data integrity.
-- **Key Management (`keys.rs`)**: Generates and securely manages cryptographic key pairs used by wallets and nodes.
-- **Digital Signatures (`signatures.rs`)**: Facilitates the signing of transactions and the verification of those signatures, ensuring that only authorized transactions are processed.
+- **Hashing**: Implements SHA3-256 hashing for blocks and transactions.
+- **Key Management**: Generates ed25519 key pairs for wallet creation.
+- **Signatures**: Framework for digital signature operations.
 
 ### 5.3 Wallet Module
 
-The `wallet` module is the user-facing component, enabling interactions with the blockchain:
+The `wallet` module enables user interaction with the blockchain:
 
-- **Key Storage and Management**: Each wallet maintains a unique key pair for secure transaction signing.
-- **Transaction Construction**: Wallets select appropriate UTXOs, sign transactions with the private key, and then broadcast them for validation.
-- **Balance Tracking**: By monitoring UTXO changes, wallets can accurately report the user’s available funds.
+- **Wallet Structure**: Contains blockchain reference, address (public key representation), and keypair.
+- **Transaction Creation**: `transfer` method creates and signs new transactions.
+- **Initialization**: `new` method creates a wallet with a fresh keypair.
 
 ## 6. Transaction Lifecycle
 
-The journey of a transaction through the system can be broken down into several steps:
+The journey of a transaction through the system:
 
-1. **Initiation**: A user starts a transaction via the wallet interface, specifying the recipient and amount.
-2. **Signature Process**: The wallet uses the user’s private key to sign the transaction, ensuring its authenticity.
-3. **Broadcasting**: The signed transaction is sent to the network, where validator nodes perform integrity checks.
-4. **Mempool Inclusion**: Valid transactions are added to the mempool, a temporary holding area before block formation.
-5. **Block Formation and Mining**: Miner nodes select transactions from the mempool, compile them into a block, and solve the PoW challenge.
-6. **Validation and Chain Update**: Once a block is mined, it’s broadcast to the network. Validator nodes verify its correctness before adding it to their copy of the blockchain.
+1. **Initiation**: A user calls `wallet.transfer()` specifying recipient and amount.
+2. **Creation**: The wallet selects appropriate UTXOs and creates a transaction with inputs and outputs.
+3. **Signing**: The transaction inputs are signed with the wallet's private key.
+4. **Validation**: The transaction is validated to ensure signature correctness.
+5. **Broadcasting**: The transaction is simulated as broadcasted to the network.
+6. **Mempool Inclusion**: Validator nodes verify the transaction and add it to their mempool.
+7. **Block Formation**: A miner node selects transactions from its mempool and creates a block.
+8. **Mining**: The miner finds a valid nonce through proof-of-work.
+9. **Block Broadcasting**: The mined block is broadcasted to the network.
+10. **Chain Update**: Validator nodes verify the block and update their blockchain and UTXO set.
 
 ## 7. Security Considerations
 
-Security is paramount in this implementation:
+Security measures in the implementation:
 
-- **Digital Signatures**: Ensure that transactions are authorized by the rightful owners without exposing private keys.
-- **Proof of Work**: Adds computational difficulty to block creation, deterring malicious actors from attempting to tamper with the blockchain.
-- **UTXO Validation**: Prevents double-spending by ensuring that each transaction only uses available unspent outputs.
-- **Consensus Mechanisms**: Aid in resolving conflicts and maintaining a unified ledger across all network nodes.
+- **Digital Signatures**: Ed25519 signatures ensure transaction authenticity.
+- **Proof of Work**: Mining difficulty prevents easy chain manipulation.
+- **UTXO Validation**: Prevents double-spending by tracking spent outputs.
+- **Transaction Verification**: Multiple validation points ensure transaction integrity.
 
 ## 8. Future Work and Roadmap
 
-As the project evolves, several enhancements are planned:
+Planned enhancements:
 
-- **Transition to P2P Networking**: Move from simulation-based node interaction to a fully distributed peer-to-peer network.
-- **Advanced Consensus Protocols**: Optimize and secure the consensus mechanism further with additional safeguards.
-- **Web Interface Development**: Implement a real-time web interface for user account management, transaction visualization, and blockchain monitoring.
-- **Transaction Fee and UTXO Optimization**: Introduce transaction fees to incentivize mining and improve UTXO selection strategies.
-- **Robust Error Handling**: Strengthen error-handling across modules to ensure resilience in adverse conditions.
+- **Improved UTXO Management**: Implement canonical and dynamic UTXO sets.
+- **Fork Handling**: Develop mechanisms for resolving blockchain forks.
+- **Peer-to-Peer Networking**: Replace simulation with actual P2P communication.
+- **Transaction Fees**: Implement fee mechanisms to prioritize transactions.
+- **Enhanced Error Handling**: Improve robustness with better error management.
+- **Comprehensive Testing**: Add strategic test coverage for core components.
+- **Web Interface**: Develop a user-friendly web UI for blockchain interaction.
 
 ## 9. Conclusion
 
-This Rust-based cryptocurrency implementation aims to provide a comprehensive, modular, and secure foundation for a Bitcoin-like system. By dividing responsibilities among well-defined modules—core blockchain logic, cryptographic operations, and wallet management—the project aims to demonstrate an in-depth understanding of decentralized systems. As development continues, the focus will be on enhancing networking capabilities, refining security measures, and expanding the user interface, paving the way for real-world applications in decentralized finance and beyond.
+This Rust cryptocurrency implementation provides a solid foundation for understanding blockchain technology through a hands-on approach. The modular architecture allows for incremental improvements and learning. While primarily educational in nature, the project demonstrates the core principles that underpin real-world cryptocurrencies: secure transactions, consensus through proof-of-work, and a transparent, immutable ledger.
+
+As development continues, the focus will be on enhancing security, networking capabilities, and usability, while maintaining the educational value of the codebase.
 
 ---

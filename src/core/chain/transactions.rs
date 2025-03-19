@@ -32,19 +32,4 @@ impl BlockChain {
         self.blocks.push(new_block);
         Ok(())
     }
-
-    /// Returns a list of all transactions in the blockchain
-    pub fn get_transactions(&self) -> Vec<Transaction> {
-        self.blocks
-            .iter()
-            .flat_map(|block| block.transactions().iter().cloned())
-            .chain(self.mempool.iter().cloned())
-            .collect()
-    }
-
-    // Populates into the blockchain a mined block
-    pub fn submit_block(&mut self, block: Block) {
-        // ?TODO! block validation ???
-        self.blocks.push(block)
-    }
 }

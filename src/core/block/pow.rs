@@ -4,6 +4,10 @@ use super::Block;
 use crate::crypto::hash_block;
 
 impl Block {
+    /// Mines this block by finding a nonce that produces a hash with the required difficulty
+    ///
+    /// The mining process involves incrementing the nonce until the block hash
+    /// starts with the specified number of zeros.
     pub fn mine(&mut self, difficulty: usize) {
         let target = "0".repeat(difficulty);
         if self.hash.is_none() {
@@ -15,8 +19,10 @@ impl Block {
         }
     }
 
+    /// Validates that this block meets the proof-of-work requirement
+    /// # TODO
+    /// * Implement validation of the transactions inside the block
     pub fn is_valid(&self, difficulty: usize) -> Result<(), SignatureError> {
-        // TODO! Validate the transactions inside the block
         let target = "0".repeat(difficulty);
         match self.hash.as_ref().unwrap().starts_with(&target) {
             true => Ok(()),
