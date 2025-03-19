@@ -6,8 +6,9 @@ pub mod accessors;
 pub mod pow;
 pub mod transactions;
 
-// TODO! Change hash: Option<String> to string
-//      Hash block on creation field by field
+// TODO: Change Block.hash from Option<String> to String
+// - Remove Option wrapper since hash should always be present after creation
+// - Update serialization to include hash field
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct Block {
     id: String,
@@ -20,7 +21,6 @@ pub struct Block {
 }
 
 impl Block {
-    // TODO! verify that two transactions in the block do not use the same UTXO
     pub fn new_template(
         previous_hash: &str,
         miner: &str,

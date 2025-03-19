@@ -24,11 +24,12 @@ mod wallet;
 /// - Validation is redundant to simulate multiple validations
 /// in a real network
 ///
-/// **TODO**! Simulate fraudulent transactions and nodes
-///
-/// **TODO**! Decide if an Arc Blockchain is of more use than a cloned one
-///
-/// **TODO**! Handle UTXOs for multiple transactions
+/// **TODO**:
+/// - Simulate fraudulent transactions and nodes
+/// - Decide if an Arc Blockchain is of more use than a cloned one
+/// - Implement Canonical and Dynamic UTXO set
+/// - Implement a fork handling system
+/// - Improve error handling
 fn main() {
     // --- BlockChain bootstrapping
     let chain = BlockChain::new();
@@ -96,7 +97,7 @@ impl Node {
         transactions: Vec<Transaction>,
         pk: &PublicKey,
     ) -> Result<Block, SignatureError> {
-        // TODO! validate UTXOs in the mempool before adding to it
+        // TODO! validate UTXOs in the mempool before adding to it (Dynamic vs Canonical UTXO set)
         transactions.iter().try_for_each(|tx| tx.is_valid(pk))?;
         transactions
             .into_iter()
@@ -119,7 +120,3 @@ impl Node {
         Ok(block.broadcast())
     }
 }
-
-// Note: Some useful invariants
-// - Every block in the chain has a valid hash (is_some)
-// - Every transaction in a block has a valid signature

@@ -3,7 +3,7 @@ use crate::core::{block::Block, transaction::Transaction};
 use std::collections::HashMap;
 
 mod chain;
-mod concensus;
+mod consensus;
 pub mod mempool;
 mod transactions;
 
@@ -12,15 +12,19 @@ mod transactions;
 pub struct BlockChain {
     pub blocks: Vec<Block>,
     pub mempool: Vec<Transaction>,
-    pub utxos: UTXOPool,
+    pub utxos: UTXOSet,
     pub difficulty: usize,
     pub reward: usize,
 }
 
-type UTXOPool = HashMap<(String, usize), UTXO>; // (tx_id, idx) -> UTXO
+/// It is needed to solve the double spending problem inside transactions in the same block.
+///
+/// the current solution is to have a Canonical and a Dynamic UTXO set
+/// - the dynamic is the one to make validations before adding a transaction to a block
+/// - the canonical is the one to make validations to transactions in a block in the blockchain
+type UTXOSet = HashMap<(String, usize), UTXO>; // (tx_id, idx) -> UTXO
 
 impl BlockChain {
-    // TODO! verify that two transactions in the mempool do not use the same UTXO
     pub fn new() -> BlockChain {
         let reward = 50 * 1_000_000; // 50 coins
         let mut genesis_block = Block::new_template("", "", reward, vec![]);

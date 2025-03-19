@@ -10,8 +10,6 @@ impl Transaction {
     }
 }
 
-// TODO! Manage transactions states
-
 #[cfg(test)]
 mod tests {
     use crate::{core::chain::BlockChain, wallet::Wallet};

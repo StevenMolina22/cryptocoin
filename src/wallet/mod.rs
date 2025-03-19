@@ -12,7 +12,7 @@ pub struct Wallet {
 impl Wallet {
     pub fn new(blockchain: BlockChain) -> Self {
         let keypair = generate_key_pair();
-        // TODO! hash the pk
+        // TODO! Add the hashed pk as an address
         Wallet {
             blockchain,
             address: format!("{:?}", keypair.public),

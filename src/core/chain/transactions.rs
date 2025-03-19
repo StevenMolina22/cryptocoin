@@ -2,17 +2,18 @@ use super::BlockChain;
 use crate::core::{block::Block, transaction::Transaction};
 use ed25519_dalek::{PublicKey, SignatureError};
 
-// TODO! Handle how to mine and receive transactions at the same time
 const MAX_TRANSACTIONS: usize = 4;
 
 impl BlockChain {
-    // TODO! Handle errors different from signature ones
     pub fn include_transaction(
         &mut self,
         tx: Transaction,
         pk: &PublicKey,
     ) -> Result<(), SignatureError> {
-        // TODO! Add enough UTXOs validation
+        // TODO: Implement comprehensive UTXO validation
+        // - Verify that transaction inputs reference existing UTXOs
+        // - Check that total input amount >= total output amount
+        // - Add unit tests for edge cases (zero inputs, very large amounts)
         tx.is_valid(pk)?;
         self.mempool.push(tx);
 
@@ -43,7 +44,7 @@ impl BlockChain {
 
     // Populates into the blockchain a mined block
     pub fn submit_block(&mut self, block: Block) {
-        // TODO! block validation?
+        // ?TODO! block validation ???
         self.blocks.push(block)
     }
 }

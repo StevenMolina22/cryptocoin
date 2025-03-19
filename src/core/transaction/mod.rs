@@ -4,12 +4,9 @@ use sha3::{Digest, Sha3_256};
 use std::collections::HashMap;
 use utxo::{TxInput, TxOutput, UTXO};
 
-pub mod accessors;
 pub mod transactions;
 pub mod utxo;
 
-// TODO! Add logic for transaction fees to incentivize miners
-// TODO! Add amount logic with UTXOs
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct Transaction {
     #[serde(skip_serializing)]
