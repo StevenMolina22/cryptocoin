@@ -45,7 +45,7 @@ fn main() {
     wallet.blockchain.mine_funds_for(&wallet.address);
 
     // --- Wallet user
-    let transaction_amounts = [2 * 1_000_000, 5 * 1_000_000, 10 * 1_000_000];
+    let transaction_amounts = [3 * 1_000_000, 5 * 1_000_000, 10 * 1_000_000];
     let transactions: Vec<_> = transaction_amounts
         .into_iter()
         .map(|amount| wallet_transfer(&mut wallet, &receiver.address, amount).unwrap())
@@ -64,9 +64,8 @@ fn main() {
 
     // --- Validator node (blocks)
     let mut node_block = Node::new(Wallet::new(chain.clone()));
-    let block = node_block.validate_block(block);
+    let _ = node_block.validate_block(block);
 
-    println!("Blockchain: \n{:#?}\n\n", node_block.wallet.blockchain);
     println!(
         "UTXOS for wallet: \n{:#?}\n",
         node_block.wallet.blockchain.utxos_of(&wallet.address)
