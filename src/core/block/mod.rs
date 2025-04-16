@@ -10,22 +10,12 @@ pub mod transactions;
 /// - Remove Option wrapper since hash should always be present after creation
 /// - Update serialization to include hash field
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
-/// Represents a block in the blockchain.
-///
-/// A block contains a list of transactions, a unique identifier, a reference to the previous block,
-/// a timestamp, and a nonce for proof-of-work.
 pub struct Block {
-    /// Unique identifier for this block.
     id: String,
-    /// Hash of the previous block in the chain.
     previous_hash: String,
-    /// Timestamp when this block was created.
     timestamp: u64,
-    /// Nonce for proof-of-work.
     nonce: u64,
-    /// List of transactions included in this block.
     pub transactions: Vec<Transaction>,
-    /// Hash of this block's contents.
     #[serde(skip_serializing)]
     hash: Option<String>,
 }

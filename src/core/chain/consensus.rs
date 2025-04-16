@@ -3,7 +3,7 @@ use crate::core::{block::Block, transaction::utxo::UTXO};
 use super::BlockChain;
 
 impl BlockChain {
-    pub fn setup_miner(&mut self, miner: &str) {
+    pub fn mine_funds_for(&mut self, miner: &str) {
         let mut coinbase_block = Block::new_template(&self.last_hash(), miner, self.reward, vec![]);
         coinbase_block.mine(self.difficulty as usize);
         self.create_output_utxos(&coinbase_block);
