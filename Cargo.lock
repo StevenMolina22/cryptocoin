@@ -33,6 +33,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "bitcoin-core"
+version = "0.1.0"
+dependencies = [
+ "bincode",
+ "chrono",
+ "ed25519-dalek",
+ "rand",
+ "ring",
+ "serde",
+ "serde_json",
+ "sha3",
+ "uuid",
+]
+
+[[package]]
 name = "block-buffer"
 version = "0.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -102,21 +117,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "608697df725056feaccfa42cffdaeeec3fccc4ffc38358ecd19b243e716a78e0"
 dependencies = [
  "libc",
-]
-
-[[package]]
-name = "cryptocoin"
-version = "0.1.0"
-dependencies = [
- "bincode",
- "chrono",
- "ed25519-dalek",
- "rand",
- "ring",
- "serde",
- "serde_json",
- "sha3",
- "uuid",
 ]
 
 [[package]]
