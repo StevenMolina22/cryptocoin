@@ -1,46 +1,15 @@
-use std::collections::VecDeque;
-
-use crate::wallet::Wallet;
-
-use super::{block::Block, chain::BlockChain, transaction::Transaction};
-
+use super::{block::Block, transaction::Transaction};
+use node::{Message, Node};
 pub mod block;
 pub mod blockchain;
+pub mod node;
 pub mod transaction;
 
-#[derive(Debug)]
-enum Message {
-    Transaction(Transaction),
-    Block(Block),
-}
-
 // Simulated module till it is implemented
-#[derive(Debug)]
-pub struct Node {
-    pub wallet: Wallet,
-    pub chain: BlockChain,
-    pub messages: VecDeque<Message>,
-}
 
 #[derive(Debug)]
 pub struct Network {
     pub nodes: Vec<Node>,
-}
-
-impl Node {
-    pub fn new() -> Self {
-        Node {
-            wallet: Wallet::new(),
-            chain: BlockChain::new(),
-            messages: VecDeque::new(),
-        }
-    }
-
-    pub fn sync_chain(&mut self, new_chain: BlockChain) {
-        if new_chain.blocks.len() > self.chain.blocks.len() {
-            self.chain = new_chain;
-        }
-    }
 }
 
 impl Network {
@@ -50,6 +19,11 @@ impl Network {
 
     pub fn add_node(&mut self, node: Node) {
         self.nodes.push(node);
+    }
+
+    // use BFS and visited nodes to broadcast a message to all nodes
+    pub fn broadcast(&mut self, node_id: &str, message: Message) {
+        todo!()
     }
 
     pub fn broadcast_transaction(&mut self, tx: Transaction) {
@@ -62,5 +36,13 @@ impl Network {
         for node in &mut self.nodes {
             node.messages.push_back(Message::Block(block.clone()));
         }
+    }
+
+    pub fn get(&self, node_id: &str) -> Option<&Node> {
+        self.nodes.iter().find(|node| node.id == node_id)
+    }
+
+    pub fn get_mut(&mut self, node_id: &str) -> Option<&mut Node> {
+        self.nodes.iter_mut().find(|node| node.id == node_id)
     }
 }

@@ -1,11 +1,21 @@
 use crate::crypto::generate_key_pair;
 use ed25519_dalek::Keypair;
-pub mod transactions;
 
 #[derive(Debug)]
 pub struct Wallet {
     pub address: String,
     pub keypair: Keypair,
+}
+
+impl Clone for Wallet {
+    fn clone(&self) -> Self {
+        let bytes = self.keypair.to_bytes();
+        let keypair = Keypair::from_bytes(&bytes).unwrap();
+        Self {
+            address: self.address.clone(),
+            keypair,
+        }
+    }
 }
 
 impl Wallet {
