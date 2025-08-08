@@ -1,4 +1,10 @@
-use core::{network::node::{Message, Node}, transaction::Transaction};
+use core::{
+    network::{
+        node::{Message, Node},
+        Network,
+    },
+    transaction::Transaction,
+};
 use ed25519_dalek::SignatureError;
 
 mod core;
@@ -25,49 +31,72 @@ mod wallet;
 ///
 /// # TODO
 /// - Simulate fraudulent transactions and nodes
-/// - Evaluate if choosing an Arc<Blockchain> or cloning
 /// - Implement Canonical and Dynamic UTXO set
 /// - Implement a fork handling system
 /// - Improve error handling
+/// - Improve testing
 /// - Define clearer interfaces
-/// - Implement strategic testing
-fn main() {
-    let mut network = core::network::Network::new();
+fn main() -> Result<(), String> {
+    let mut network = Network::new();
 
-    // Create nodes
-    let mut sender_node = Node::new();
-    let mut receiver_node = Node::new();
-    let mut miner_node = Node::new();
+    // add nodes
+    for _ in 0..3 {
+        network.add_node(Node::new());
+    }
+    let [sender_id, receiver_id, miner_id] =
+        network.nodes.keys().collect::<Vec<_>>().try_into().unwrap();
 
-    // Add nodes to the network
-    network.add_node(sender_node.clone());
-    network.add_node(receiver_node.clone());
-    network.add_node(miner_node.clone());
-
-    // Mine initial funds for the sender
-    sender_node.chain.mine_funds_for(&sender_node.wallet.address);
-    sender_node.chain.mine_funds_for(&sender_node.wallet.address);
-    sender_node.chain.mine_funds_for(&sender_node.wallet.address);
+    network
+        .get_mut(sender_id)
+        .ok_or("Sender not found")?
+        .chain
+        .mine_funds_for(sender_id);
 
     // Create and broadcast transactions
     let transaction_amounts = [3 * 1_000_000, 5 * 1_000_000, 10 * 1_000_000];
     for amount in transaction_amounts.iter() {
-        let tx = transfer(&mut sender_node, &receiver_node.wallet.address, *amount).unwrap();
+        let tx = transfer(
+            network.get_mut(sender_id).ok_or("Sender not found")?,
+            &network
+                .get(receiver_id)
+                .ok_or("Receiver not found")?
+                .wallet
+                .address,
+            *amount,
+        )
+        .unwrap();
         network.broadcast_transaction(tx);
     }
 
     // Process transactions from the network
     for node in network.nodes.iter_mut() {
         while let Some(message) = node.messages.pop_front() {
-            if let core::network::node::Message::Transaction(tx) = message {
-                node.validate_tx(tx, &sender_node.wallet.keypair.public).unwrap();
+            if let Message::Transaction(tx) = message {
+                node.add_to_mempool(tx, &sender.wallet.keypair.public)
+                    .unwrap();
             }
         }
     }
 
     // Miner mines a new block
-    let block = miner_node.mine(miner_node.chain.mempool.clone(), &sender_node.wallet.keypair.public).unwrap();
-    network.broadcast_block(block);
+    let block = network
+        .get_mut(miner_id)
+        .ok_or("Miner not found")?
+        .mine_block(
+            network
+                .get(miner_id)
+                .ok_or("Miner not found")?
+                .chain
+                .mempool
+                .clone(),
+            &network
+                .get(sender_id)
+                .ok_or("Sender not found")?
+                .wallet
+                .keypair
+                .public,
+        );
+    broadcast_block(&mut network, miner_id, block)?;
 
     // Process the new block from the network
     for node in network.nodes.iter_mut() {
@@ -88,6 +117,7 @@ fn main() {
             node.chain.utxos_of(&node.wallet.address)
         );
     }
+    Ok(())
 }
 
 /// Creates and signs a transaction from a wallet to a receiver

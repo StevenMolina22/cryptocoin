@@ -5,6 +5,7 @@ use crate::{
     wallet::Wallet,
 };
 use ed25519_dalek::{PublicKey, SignatureError};
+use uuid::Uuid;
 
 #[derive(Debug, Clone)]
 pub enum Message {
@@ -18,23 +19,22 @@ pub struct Node {
     pub wallet: Wallet,
     pub chain: BlockChain,
     pub messages: VecDeque<Message>,
-    peers: Vec<String>, // List of peer node IDs
+    pub peers: Vec<String>, // List of peer node IDs
 }
 
 impl Node {
     pub fn new() -> Self {
-        let wallet = Wallet::new();
         Self {
-            id: wallet.address.clone(),
-            wallet,
+            id: Uuid::new_v4().to_string(),
+            wallet: Wallet::new(),
             chain: BlockChain::new(),
             messages: VecDeque::new(),
             peers: Vec::new(),
         }
     }
 
-    /// Validates a transaction and adds it to the mempool
-    pub fn validate_tx(
+    /// Adds transaction to the mempool if its valid
+    pub fn add_to_mempool(
         &mut self,
         tx: Transaction,
         pk: &PublicKey,
@@ -56,7 +56,7 @@ impl Node {
     ///
     /// # TODO
     /// - Validate UTXOs in the mempool before adding to it (Dynamic vs Canonical UTXO set)
-    pub fn mine(
+    pub fn mine_block(
         &mut self,
         transactions: Vec<Transaction>,
         pk: &PublicKey,
