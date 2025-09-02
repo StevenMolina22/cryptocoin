@@ -33,8 +33,8 @@ impl Node {
         }
     }
 
-    /// Adds transaction to the mempool if its valid
-    pub fn add_to_mempool(
+    /// Adds transaction to the mempool, returns error if invalid
+    pub fn add_transaction(
         &mut self,
         tx: Transaction,
         pk: &PublicKey,

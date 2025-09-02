@@ -6,6 +6,7 @@ use core::{
     transaction::Transaction,
 };
 use ed25519_dalek::SignatureError;
+use thiserror::Error;
 
 mod core;
 mod crypto;
@@ -36,79 +37,73 @@ mod wallet;
 /// - Improve error handling
 /// - Improve testing
 /// - Define clearer interfaces
-fn main() -> Result<(), String> {
+fn main() -> Result<(), MyError> {
     let mut network = Network::new();
 
     // add nodes
     for _ in 0..3 {
         network.add_node(Node::new());
     }
-    let [sender_id, receiver_id, miner_id] =
-        network.nodes.keys().collect::<Vec<_>>().try_into().unwrap();
+
+    let [sender_id, receiver_id, miner_id] = network
+        .nodes
+        .keys()
+        .cloned()
+        .collect::<Vec<_>>()
+        .try_into()
+        .unwrap();
 
     network
-        .get_mut(sender_id)
-        .ok_or("Sender not found")?
+        .get_mut(&sender_id)
+        .ok_or(MyError::NodeNotFound(sender_id.clone()))?
         .chain
-        .mine_funds_for(sender_id);
+        .mine_funds_for(&sender_id);
 
     // Create and broadcast transactions
     let transaction_amounts = [3 * 1_000_000, 5 * 1_000_000, 10 * 1_000_000];
     for amount in transaction_amounts.iter() {
+        let receiver_addr = network
+            .get(&receiver_id)
+            .ok_or(MyError::NodeNotFound(receiver_id.clone()))?
+            .wallet
+            .address
+            .clone(); // Clone to get an owned String
+
         let tx = transfer(
-            network.get_mut(sender_id).ok_or("Sender not found")?,
-            &network
-                .get(receiver_id)
-                .ok_or("Receiver not found")?
-                .wallet
-                .address,
+            network
+                .get_mut(&sender_id)
+                .ok_or(MyError::NodeNotFound(sender_id.clone()))?,
+            &receiver_addr, // Pass the owned address
             *amount,
         )
         .unwrap();
         network.broadcast_transaction(tx);
     }
 
-    // Process transactions from the network
-    for node in network.nodes.iter_mut() {
-        while let Some(message) = node.messages.pop_front() {
-            if let Message::Transaction(tx) = message {
-                node.add_to_mempool(tx, &sender.wallet.keypair.public)
-                    .unwrap();
-            }
-        }
-    }
+    network.process_messages();
 
-    // Miner mines a new block
+    let (mempool, miner_pubkey) = {
+        let miner_node = network
+            .get(&miner_id)
+            .ok_or(MyError::NodeNotFound(miner_id.clone()))?;
+        (
+            miner_node.chain.mempool.clone(),
+            miner_node.wallet.keypair.public,
+        )
+    };
+
     let block = network
-        .get_mut(miner_id)
-        .ok_or("Miner not found")?
-        .mine_block(
-            network
-                .get(miner_id)
-                .ok_or("Miner not found")?
-                .chain
-                .mempool
-                .clone(),
-            &network
-                .get(sender_id)
-                .ok_or("Sender not found")?
-                .wallet
-                .keypair
-                .public,
-        );
-    broadcast_block(&mut network, miner_id, block)?;
+        .get_mut(&miner_id)
+        .ok_or(MyError::NodeNotFound(miner_id.clone()))?
+        .mine_block(mempool, &miner_pubkey)?;
+
+    network.broadcast_block(block);
 
     // Process the new block from the network
-    for node in network.nodes.iter_mut() {
-        while let Some(message) = node.messages.pop_front() {
-            if let Message::Block(block) = message {
-                node.add_block(block).unwrap();
-            }
-        }
-    }
+    network.process_messages();
 
     // Print UTXOs for each node
-    for node in network.nodes.iter() {
+    for node in network.nodes.values() {
         println!(
             "UTXOS for node:
         {:#?}
@@ -139,4 +134,14 @@ fn transfer(
     .unwrap();
     tx.is_valid(&sender.wallet.keypair.public)?;
     Ok(tx.broadcast())
+}
+
+#[derive(Error, Debug)]
+pub enum MyError {
+    #[error("Custom error: {0}")]
+    Custom(String),
+    #[error("Signature error: {0}")]
+    Signature(#[from] SignatureError),
+    #[error("Node not found: {0}")]
+    NodeNotFound(String),
 }

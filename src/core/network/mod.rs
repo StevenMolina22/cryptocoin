@@ -7,18 +7,14 @@ pub mod blockchain;
 pub mod node;
 pub mod transaction;
 
-// Simulated module till it is implemented
-
 #[derive(Debug)]
 pub struct Network {
-    // pub nodes: Vec<Node>,
     pub nodes: HashMap<String, Node>,
 }
 
 impl Network {
     pub fn new() -> Self {
         Network {
-            // nodes: Vec::new(),
             nodes: HashMap::new(),
         }
     }
@@ -49,5 +45,23 @@ impl Network {
 
     pub fn get_mut(&mut self, node_id: &str) -> Option<&mut Node> {
         self.nodes.get_mut(node_id)
+    }
+
+    pub fn process_messages(&mut self) {
+        for node in self.nodes.values_mut() {
+            while let Some(message) = node.messages.pop_front() {
+                let pk = node.wallet.keypair.public;
+                match message {
+                    Message::Transaction(tx) => {
+                        node.add_transaction(tx, &pk).unwrap();
+                        ()
+                    }
+                    Message::Block(block) => {
+                        node.add_block(block).unwrap();
+                        ()
+                    }
+                }
+            }
+        }
     }
 }
